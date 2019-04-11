@@ -198,10 +198,10 @@ res <- bench::mark(
 
 | expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pgm()             |  3.21ms |  5.41ms |  3.74ms |     185 |     2.49KB |
-| foist::write\_pgm(column-major) |  2.14ms |  2.68ms |  2.48ms |     373 |     2.49KB |
-| png::writePNG()                 | 12.32ms | 14.19ms | 14.03ms |      70 |   673.21KB |
-| jpeg::writeJPEG                 |  6.17ms |   7.8ms |  7.75ms |     128 |   663.55KB |
+| foist::write\_pgm()             |  3.12ms |   4.2ms |  4.07ms |     238 |     2.49KB |
+| foist::write\_pgm(column-major) |  2.12ms |  2.64ms |  2.43ms |     378 |     2.49KB |
+| png::writePNG()                 | 12.32ms | 14.18ms | 14.03ms |      71 |   673.21KB |
+| jpeg::writeJPEG                 |  6.17ms |  7.71ms |  7.62ms |     130 |   663.55KB |
 
 Benchmark results
 
@@ -233,12 +233,12 @@ res <- bench::mark(
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_ppm()             | 18.94ms | 27.16ms | 21.91ms |      37 |     2.49KB |
-| foist::write\_ppm(column-major) |  4.81ms |  6.48ms |  6.01ms |     154 |     2.49KB |
-| png::writePNG()                 | 46.17ms | 49.36ms | 48.57ms |      20 |     1.88MB |
-| jpeg::writeJPEG                 | 26.22ms | 28.81ms | 28.81ms |      35 |     1.88MB |
+| expression                      |     min |   mean |  median | itr/sec | mem\_alloc |
+| :------------------------------ | ------: | -----: | ------: | ------: | ---------: |
+| foist::write\_ppm()             | 18.73ms | 22.6ms | 21.74ms |      44 |     2.49KB |
+| foist::write\_ppm(column-major) |  4.81ms |  6.5ms |  5.99ms |     154 |     2.49KB |
+| png::writePNG()                 | 45.21ms | 49.6ms | 49.58ms |      20 |     1.88MB |
+| jpeg::writeJPEG                 | 26.05ms | 28.8ms | 28.86ms |      35 |     1.88MB |
 
 Benchmark results
 
