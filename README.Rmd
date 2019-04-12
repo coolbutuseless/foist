@@ -180,12 +180,12 @@ system("convert man/figures/col-7.ppm -define png:exclude-chunks=date,time man/f
 ```
 
 <div>
-  <img src = "man/figures/col-convert-0.png" width = "30%" title = "grey">
-  <img src = "man/figures/col-convert-3.png" width = "30%" title = "magma">
-  <img src = "man/figures/col-convert-4.png" width = "30%" title = "inferno">
-  <img src = "man/figures/col-convert-5.png" width = "30%" title = "plasma">
-  <img src = "man/figures/col-convert-6.png" width = "30%" title = "viridis">
-  <img src = "man/figures/col-convert-7.png" width = "30%" title = "cividis">
+  <img src = "man/figures/col-convert-0-n.png" width = "30%" title = "grey">
+  <img src = "man/figures/col-convert-3.png"   width = "30%" title = "magma">
+  <img src = "man/figures/col-convert-4.png"   width = "30%" title = "inferno">
+  <img src = "man/figures/col-convert-5.png"   width = "30%" title = "plasma">
+  <img src = "man/figures/col-convert-6.png"   width = "30%" title = "viridis">
+  <img src = "man/figures/col-convert-7.png"   width = "30%" title = "cividis">
 </div>
 
 

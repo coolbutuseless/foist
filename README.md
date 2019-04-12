@@ -165,12 +165,12 @@ foist::write_pal_ppm(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.ppm")
 
 <div>
 
-<img src = "man/figures/col-convert-0.png" width = "30%" title = "grey">
-<img src = "man/figures/col-convert-3.png" width = "30%" title = "magma">
-<img src = "man/figures/col-convert-4.png" width = "30%" title = "inferno">
-<img src = "man/figures/col-convert-5.png" width = "30%" title = "plasma">
-<img src = "man/figures/col-convert-6.png" width = "30%" title = "viridis">
-<img src = "man/figures/col-convert-7.png" width = "30%" title = "cividis">
+<img src = "man/figures/col-convert-0-n.png" width = "30%" title = "grey">
+<img src = "man/figures/col-convert-3.png"   width = "30%" title = "magma">
+<img src = "man/figures/col-convert-4.png"   width = "30%" title = "inferno">
+<img src = "man/figures/col-convert-5.png"   width = "30%" title = "plasma">
+<img src = "man/figures/col-convert-6.png"   width = "30%" title = "viridis">
+<img src = "man/figures/col-convert-7.png"   width = "30%" title = "cividis">
 
 </div>
 
@@ -203,11 +203,11 @@ res <- bench::mark(
 
 | expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pgm()                    |  3.09ms |  4.21ms |  3.92ms |     237 |     2.49KB |
-| foist::write\_pgm(column-major)        |  2.19ms |  2.66ms |   2.5ms |     376 |     2.49KB |
-| foist::write\_pgm(column-major, flipy) |  2.16ms |  2.72ms |  2.55ms |     368 |     2.49KB |
-| png::writePNG()                        | 12.71ms | 14.72ms | 14.62ms |      68 |   673.21KB |
-| jpeg::writeJPEG                        |  6.32ms |  7.94ms |  7.96ms |     126 |   663.55KB |
+| foist::write\_pgm()                    |  2.97ms |  4.29ms |  4.11ms |     233 |     2.49KB |
+| foist::write\_pgm(column-major)        |  2.04ms |  2.45ms |   2.3ms |     408 |     2.49KB |
+| foist::write\_pgm(column-major, flipy) |  2.05ms |  2.46ms |  2.32ms |     407 |     2.49KB |
+| png::writePNG()                        | 11.88ms | 14.27ms | 13.78ms |      70 |   673.21KB |
+| jpeg::writeJPEG                        |  6.06ms |  7.74ms |  7.62ms |     129 |   663.55KB |
 
 Benchmark results
 
@@ -242,11 +242,11 @@ res <- bench::mark(
 
 | expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_ppm()                    | 19.21ms | 22.09ms | 22.21ms |      45 |     2.49KB |
-| foist::write\_ppm(column-major)        |  4.79ms |  6.29ms |  5.91ms |     159 |     2.49KB |
-| foist::write\_ppm(column-major, flipy) |     5ms |  6.33ms |  5.91ms |     158 |     2.49KB |
-| png::writePNG()                        | 46.91ms | 49.46ms | 49.19ms |      20 |     1.88MB |
-| jpeg::writeJPEG                        | 26.99ms | 29.36ms | 29.38ms |      34 |     1.88MB |
+| foist::write\_ppm()                    | 18.19ms | 21.48ms | 21.45ms |      47 |     2.49KB |
+| foist::write\_ppm(column-major)        |  4.67ms |   5.9ms |  5.59ms |     170 |     2.49KB |
+| foist::write\_ppm(column-major, flipy) |  4.66ms |  5.97ms |   5.6ms |     168 |     2.49KB |
+| png::writePNG()                        | 44.73ms | 48.52ms | 48.69ms |      21 |     1.88MB |
+| jpeg::writeJPEG                        | 26.04ms |  28.1ms |  28.1ms |      36 |     1.88MB |
 
 Benchmark results
 
