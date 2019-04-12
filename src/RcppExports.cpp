@@ -6,51 +6,54 @@
 using namespace Rcpp;
 
 // write_pgm
-void write_pgm(NumericMatrix mat, std::string filename, bool convert_to_row_major, double intensity_factor);
-RcppExport SEXP _foist_write_pgm(SEXP matSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP intensity_factorSEXP) {
+void write_pgm(NumericMatrix mat, std::string filename, bool convert_to_row_major, bool flipy, double intensity_factor);
+RcppExport SEXP _foist_write_pgm(SEXP matSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP intensity_factorSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< bool >::type convert_to_row_major(convert_to_row_majorSEXP);
+    Rcpp::traits::input_parameter< bool >::type flipy(flipySEXP);
     Rcpp::traits::input_parameter< double >::type intensity_factor(intensity_factorSEXP);
-    write_pgm(mat, filename, convert_to_row_major, intensity_factor);
+    write_pgm(mat, filename, convert_to_row_major, flipy, intensity_factor);
     return R_NilValue;
 END_RCPP
 }
 // write_pal_ppm
-void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename, bool convert_to_row_major, double intensity_factor);
-RcppExport SEXP _foist_write_pal_ppm(SEXP matSEXP, SEXP palSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP intensity_factorSEXP) {
+void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename, bool convert_to_row_major, bool flipy, double intensity_factor);
+RcppExport SEXP _foist_write_pal_ppm(SEXP matSEXP, SEXP palSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP intensity_factorSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
     Rcpp::traits::input_parameter< IntegerMatrix >::type pal(palSEXP);
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< bool >::type convert_to_row_major(convert_to_row_majorSEXP);
+    Rcpp::traits::input_parameter< bool >::type flipy(flipySEXP);
     Rcpp::traits::input_parameter< double >::type intensity_factor(intensity_factorSEXP);
-    write_pal_ppm(mat, pal, filename, convert_to_row_major, intensity_factor);
+    write_pal_ppm(mat, pal, filename, convert_to_row_major, flipy, intensity_factor);
     return R_NilValue;
 END_RCPP
 }
 // write_ppm_core
-void write_ppm_core(NumericVector arr, IntegerVector dims, std::string filename, bool convert_to_row_major, double intensity_factor);
-RcppExport SEXP _foist_write_ppm_core(SEXP arrSEXP, SEXP dimsSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP intensity_factorSEXP) {
+void write_ppm_core(NumericVector arr, IntegerVector dims, std::string filename, bool convert_to_row_major, bool flipy, double intensity_factor);
+RcppExport SEXP _foist_write_ppm_core(SEXP arrSEXP, SEXP dimsSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP intensity_factorSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type arr(arrSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< bool >::type convert_to_row_major(convert_to_row_majorSEXP);
+    Rcpp::traits::input_parameter< bool >::type flipy(flipySEXP);
     Rcpp::traits::input_parameter< double >::type intensity_factor(intensity_factorSEXP);
-    write_ppm_core(arr, dims, filename, convert_to_row_major, intensity_factor);
+    write_ppm_core(arr, dims, filename, convert_to_row_major, flipy, intensity_factor);
     return R_NilValue;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_foist_write_pgm", (DL_FUNC) &_foist_write_pgm, 4},
-    {"_foist_write_pal_ppm", (DL_FUNC) &_foist_write_pal_ppm, 5},
-    {"_foist_write_ppm_core", (DL_FUNC) &_foist_write_ppm_core, 5},
+    {"_foist_write_pgm", (DL_FUNC) &_foist_write_pgm, 5},
+    {"_foist_write_pal_ppm", (DL_FUNC) &_foist_write_pal_ppm, 6},
+    {"_foist_write_ppm_core", (DL_FUNC) &_foist_write_ppm_core, 6},
     {NULL, NULL, 0}
 };
 

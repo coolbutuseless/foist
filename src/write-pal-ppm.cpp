@@ -4,6 +4,7 @@
 
 using namespace Rcpp;
 
+#define BUFFER_ROWS 20
 
 //' Write a numeric matrix to a PPM file using the specified palette
 //'
@@ -16,6 +17,8 @@ using namespace Rcpp;
 //'        expected by PGM/PPM image format) data ordering must be converted. If this argument
 //'        is set to FALSE, then image output will be faster (due to fewer data-ordering operations, and
 //'        better cache coherency) but the image will be transposed. Default: TRUE
+//' @param flipy By default, the position [0, 0] is considered the top-left corner of the output image. Set flipy = TRUE
+//'        for [0, 0] to represent the bottom-left corner. Default: flipy = FALSE
 //' @param intensity_factor Multiplication factor applied to all values in image
 //'        (note: no checking is performed to ensure values remain in range [0, 1]).
 //'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
@@ -23,7 +26,9 @@ using namespace Rcpp;
 //'
 //'
 // [[Rcpp::export]]
-void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename, bool convert_to_row_major = true, double intensity_factor = 1) {
+void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename,
+                    bool convert_to_row_major = true, bool flipy = false,
+                    double intensity_factor = 1) {
 
   unsigned int nrow = mat.nrow(), ncol = mat.ncol();
 
@@ -40,12 +45,14 @@ void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename, b
 
   // Set up buffer to write only 20 rows a time
   // Reduces memory usage (over allocating full size image)
-  unsigned int buffer_size = 20 * ncol * 3;
-  unsigned char *uc = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
-  if (!uc) stop("write_pal_ppm(): out of memory");
+  unsigned int buffer_size    =         BUFFER_ROWS  * ncol * 3;
+  unsigned int remainder_size = (nrow % BUFFER_ROWS) * ncol * 3;
+  unsigned char *uc0 = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
+  if (!uc0) stop("write_pal_ppm(): out of memory");
+  unsigned char *uc = uc0;
 
   // Get a pointer to the actual data in the supplied matrix
-  double *v = mat.begin();
+  double *v0 = mat.begin();
 
   // Scaling
   double scale_factor = 255.0;
@@ -64,48 +71,47 @@ void write_pal_ppm(NumericMatrix mat, IntegerMatrix pal, std::string filename, b
   outfile.open(filename, std::ios::out | std::ios::binary);
   outfile << "P6" << std::endl << ncol << " " << nrow << std::endl << 255 << std::endl;
 
-  unsigned int out = 0;
   if (convert_to_row_major) {
     // Convert from R's column-major ordering to row-major output order
     for (unsigned int row = 0; row < nrow; row++) {
-      unsigned int j = row;
+      unsigned int j = flipy ? nrow - 1 - row : row;
       for (unsigned int col = 0; col < ncol; col ++) {
-        unsigned char val = (unsigned char)(v[j] * scale_factor);
-        uc[out++] = pal(val, 0);
-        uc[out++] = pal(val, 1);
-        uc[out++] = pal(val, 2);
+        unsigned char val = (unsigned char)(v0[j] * scale_factor);
+        *uc++ = pal(val, 0);
+        *uc++ = pal(val, 1);
+        *uc++ = pal(val, 2);
         j += nrow;
       }
 
       // Flush the buffer to file
-      if (out >= buffer_size) {
-        outfile.write((char *)uc, sizeof(unsigned char) * out);
-        out = 0;
+      if ((row + 1) % BUFFER_ROWS == 0) {
+        outfile.write((char *)uc0, sizeof(unsigned char) * buffer_size);
+        uc = uc0;
       }
     }
   } else {
     // Write pixels in R's column-major ordering
     for (unsigned int row = 0; row < nrow; row++) {
+      const unsigned int offset = flipy ? nrow - 1 - row : row;
+      double *v = v0 + ncol * offset;
       for (unsigned int col = 0; col < ncol; col ++) {
         unsigned char val = (unsigned char)(*v++ * scale_factor);
-        uc[out++] = pal(val, 0);
-        uc[out++] = pal(val, 1);
-        uc[out++] = pal(val, 2);
+        *uc++ = pal(val, 0);
+        *uc++ = pal(val, 1);
+        *uc++ = pal(val, 2);
       }
 
       // Flush the buffer to file
-      if (out >= buffer_size) {
-        outfile.write((char *)uc, sizeof(unsigned char) * out);
-        out = 0;
+      if ((row + 1) % BUFFER_ROWS == 0) {
+        outfile.write((char *)uc0, sizeof(unsigned char) * buffer_size);
+        uc = uc0;
       }
     }
   }
 
   // Flush any remaining values to file
-  if (out > 0) {
-    outfile.write((char *)uc, sizeof(unsigned char) * out);
-  }
+  outfile.write((char *)uc0, sizeof(unsigned char) * remainder_size);
 
   outfile.close();
-  free(uc);
+  free(uc0);
 }

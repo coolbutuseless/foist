@@ -4,7 +4,7 @@
 \alias{write_ppm}
 \title{Write a numeric array to a PPM file}
 \usage{
-write_ppm(arr, filename, convert_to_row_major = TRUE,
+write_ppm(arr, filename, convert_to_row_major = TRUE, flipy = FALSE,
   intensity_factor = 1)
 }
 \arguments{
@@ -17,6 +17,9 @@ and array data in column-major order. In order to output row-major order (as
 expected by PGM/PPM image format) data ordering must be converted. If this argument
 is set to FALSE, then image output will be faster (due to fewer data-ordering operations, and
 better cache coherency) but the image will be transposed. Default: TRUE}
+
+\item{flipy}{By default, the position [0, 0] is considered the top-left corner of the output image. Set flipy = TRUE
+for [0, 0] to represent the bottom-left corner. Default: flipy = FALSE}
 
 \item{intensity_factor}{Multiplication factor applied to all values in image
 (note: no checking is performed to ensure values remain in range [0, 1]).

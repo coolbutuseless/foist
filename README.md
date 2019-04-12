@@ -5,8 +5,8 @@
 
 <!-- badges: start -->
 
-![](https://img.shields.io/badge/version-0.1.0-blue.svg)
-![](https://img.shields.io/badge/Rcpp-Awesome!-green.svg)
+![](https://img.shields.io/badge/Status-alpha-orange.svg)
+![](https://img.shields.io/badge/Version-0.1.1-blue.svg)
 <!-- badges: end -->
 
 #### `foist` is a very fast way to output a matrix or array to a lossless image file.
@@ -102,13 +102,15 @@ written to file.
 
 ``` r
 write_pgm(dbl_mat, "man/figures/col-0-n.pgm")
-write_pgm(dbl_mat, "man/figures/col-0-t.pgm", intensity_factor = 0.5)
+write_pgm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
+write_pgm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
 ```
 
 <div>
 
 <img src = "man/figures/col-convert-0-n.png"  width = "30%" title = "no scaling">
-<img src = "man/figures/col-convert-0-t.png"  width = "30%" title = "intensity_factor = 0.5" style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-0-f.png"  width = "30%" title = "flipy = TRUE"            style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-0-t.png"  width = "19%" title = "intensity_factor = 0.5"  style = "margin-left: 30px;">
 
 </div>
 
@@ -123,13 +125,15 @@ written to file.
 
 ``` r
 write_ppm(dbl_arr, filename = "man/figures/col-1-n.ppm")
+write_ppm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
 write_ppm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
 ```
 
 <div>
 
 <img src = "man/figures/col-convert-1-n.png"  width = "30%" title = "convert_to_row_major = TRUE">
-<img src = "man/figures/col-convert-1-t.png"  width = "19%" title = "convert_to_row_major = FALSE" style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-1-f.png"  width = "30%" title = "flipy = TRUE"                  style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-1-t.png"  width = "19%" title = "convert_to_row_major = FALSE"  style = "margin-left: 30px;">
 
 </div>
 
@@ -188,20 +192,22 @@ The following benchmark compares:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_pgm()`             = foist::write_pgm(dbl_mat, tmp),
-  `foist::write_pgm(column-major)` = foist::write_pgm(dbl_mat, tmp, convert_to_row_major = FALSE),
-  `png::writePNG()`                = png::writePNG   (dbl_mat, tmp),
-  `jpeg::writeJPEG`                = jpeg::writeJPEG (dbl_mat, tmp),
+  `foist::write_pgm()`                    = foist::write_pgm(dbl_mat, tmp),
+  `foist::write_pgm(column-major)`        = foist::write_pgm(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_pgm(column-major, flipy)` = foist::write_pgm(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE),
+  `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
+  `jpeg::writeJPEG`                       = jpeg::writeJPEG (dbl_mat, tmp),
   min_time = 2, check = FALSE
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pgm()             |  3.01ms |  3.95ms |  3.65ms |     253 |     2.49KB |
-| foist::write\_pgm(column-major) |  2.02ms |  2.53ms |  2.35ms |     395 |     2.49KB |
-| png::writePNG()                 | 12.04ms | 13.57ms | 13.57ms |      74 |   673.21KB |
-| jpeg::writeJPEG                 |  5.91ms |  7.49ms |  7.46ms |     133 |   663.55KB |
+| expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_pgm()                    |  3.09ms |  4.21ms |  3.92ms |     237 |     2.49KB |
+| foist::write\_pgm(column-major)        |  2.19ms |  2.66ms |   2.5ms |     376 |     2.49KB |
+| foist::write\_pgm(column-major, flipy) |  2.16ms |  2.72ms |  2.55ms |     368 |     2.49KB |
+| png::writePNG()                        | 12.71ms | 14.72ms | 14.62ms |      68 |   673.21KB |
+| jpeg::writeJPEG                        |  6.32ms |  7.94ms |  7.96ms |     126 |   663.55KB |
 
 Benchmark results
 
@@ -225,20 +231,22 @@ The following benchmark compares:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_ppm()`             = foist::write_ppm(dbl_arr, tmp),
-  `foist::write_ppm(column-major)` = foist::write_ppm(dbl_arr, tmp, convert_to_row_major = FALSE),
-  `png::writePNG()`                = png::writePNG   (dbl_arr, tmp),
-  `jpeg::writeJPEG`                = jpeg::writeJPEG (dbl_arr, tmp),
+  `foist::write_ppm()`                    = foist::write_ppm(dbl_arr, tmp),
+  `foist::write_ppm(column-major)`        = foist::write_ppm(dbl_arr, tmp, convert_to_row_major = FALSE),
+  `foist::write_ppm(column-major, flipy)` = foist::write_ppm(dbl_arr, tmp, convert_to_row_major = FALSE, flipy = TRUE),
+  `png::writePNG()`                       = png::writePNG   (dbl_arr, tmp),
+  `jpeg::writeJPEG`                       = jpeg::writeJPEG (dbl_arr, tmp),
   min_time = 2, check = FALSE
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_ppm()             | 18.45ms | 21.83ms | 21.17ms |      46 |     2.49KB |
-| foist::write\_ppm(column-major) |  4.71ms |  6.18ms |  5.68ms |     162 |     2.49KB |
-| png::writePNG()                 | 43.55ms | 48.44ms | 48.14ms |      21 |     1.88MB |
-| jpeg::writeJPEG                 |  25.6ms |    28ms |  28.1ms |      36 |     1.88MB |
+| expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_ppm()                    | 19.21ms | 22.09ms | 22.21ms |      45 |     2.49KB |
+| foist::write\_ppm(column-major)        |  4.79ms |  6.29ms |  5.91ms |     159 |     2.49KB |
+| foist::write\_ppm(column-major, flipy) |     5ms |  6.33ms |  5.91ms |     158 |     2.49KB |
+| png::writePNG()                        | 46.91ms | 49.46ms | 49.19ms |      20 |     1.88MB |
+| jpeg::writeJPEG                        | 26.99ms | 29.36ms | 29.38ms |      34 |     1.88MB |
 
 Benchmark results
 
