@@ -82,7 +82,7 @@ devtools::install_github("coolbutuseless/foist")
 ```{r}
 ncol    <- 256
 nrow    <- 160
-int_vec <- rep.int(seq(ncol) - 1, nrow) %% 256L
+int_vec <- seq(nrow * ncol) %% 254L
 int_mat <- matrix(int_vec, nrow = nrow, ncol = ncol, byrow = TRUE)
 dbl_mat <- int_mat/255
 

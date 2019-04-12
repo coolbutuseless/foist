@@ -33,10 +33,16 @@ void write_ppm_core(NumericVector arr, IntegerVector dims, std::string filename,
     stop("write_ppm_core(): Must be a 3d array with 3 planes");
   }
 
-  // Set up buffer to write only 10 rows a time
-  // Reduces memory usage. May help with IO.
-  // Negligible overall speed impact on my machine
-  unsigned int buffer_size = 10 * ncol * 3;
+  // If writing in column-major, swap 'nrow' and 'ncol'
+  if (!convert_to_row_major) {
+    unsigned int tmp = nrow;
+    nrow = ncol;
+    ncol = tmp;
+  }
+
+  // Set up buffer to write only 20 rows a time
+  // Reduces memory usage (over allocating full size image)
+  unsigned int buffer_size = 20 * ncol * 3;
   unsigned char *uc = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
   if (!uc) stop("write_ppm_core(): out of memory");
 
@@ -59,11 +65,7 @@ void write_ppm_core(NumericVector arr, IntegerVector dims, std::string filename,
   // Open the output and write a PPM header
   std::ofstream outfile;
   outfile.open(filename, std::ios::out | std::ios::binary);
-  if (convert_to_row_major) {
-    outfile << "P6" << std::endl << ncol << " " << nrow << std::endl << 255 << std::endl;
-  } else {
-    outfile << "P6" << std::endl << nrow << " " << ncol << std::endl << 255 << std::endl;
-  }
+  outfile << "P6" << std::endl << ncol << " " << nrow << std::endl << 255 << std::endl;
 
   unsigned int out = 0;
   if (convert_to_row_major) {

@@ -22,10 +22,16 @@ using namespace Rcpp;
 void write_pgm(NumericMatrix mat, std::string filename, bool convert_to_row_major = true, double intensity_factor = 1) {
   unsigned int nrow = mat.nrow(), ncol = mat.ncol();
 
-  // Set up buffer to write only 10 rows a time
-  // Reduces memory usage. May help with IO.
-  // Negligible overall speed impact on my machine
-  unsigned int buffer_size = 10 * ncol;
+  // If writing in column-major, swap 'nrow' and 'ncol'
+  if (!convert_to_row_major) {
+    unsigned int tmp = nrow;
+    nrow = ncol;
+    ncol = tmp;
+  }
+
+  // Set up buffer to write only 20 rows a time
+  // Reduces memory usage (over allocating full size image)
+  unsigned int buffer_size = 20 * ncol;
   unsigned char *uc = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
   if (!uc) stop("write_pgm(): out of memory");
 
@@ -47,11 +53,7 @@ void write_pgm(NumericMatrix mat, std::string filename, bool convert_to_row_majo
   // Open the output and write a PGM header
   std::ofstream outfile;
   outfile.open(filename, std::ios::out | std::ios::binary);
-  if (convert_to_row_major) {
-    outfile << "P5" << std::endl << ncol << " " << nrow << std::endl << 255 << std::endl;
-  } else {
-    outfile << "P5" << std::endl << nrow << " " << ncol << std::endl << 255 << std::endl;
-  }
+  outfile << "P5" << std::endl << ncol << " " << nrow << std::endl << 255 << std::endl;
 
 
   unsigned int out = 0;

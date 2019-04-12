@@ -80,7 +80,7 @@ devtools::install_github("coolbutuseless/foist")
 ``` r
 ncol    <- 256
 nrow    <- 160
-int_vec <- rep.int(seq(ncol) - 1, nrow) %% 256L
+int_vec <- seq(nrow * ncol) %% 254L
 int_mat <- matrix(int_vec, nrow = nrow, ncol = ncol, byrow = TRUE)
 dbl_mat <- int_mat/255
 
@@ -198,10 +198,10 @@ res <- bench::mark(
 
 | expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pgm()             |  3.12ms |   4.2ms |  4.07ms |     238 |     2.49KB |
-| foist::write\_pgm(column-major) |  2.12ms |  2.64ms |  2.43ms |     378 |     2.49KB |
-| png::writePNG()                 | 12.32ms | 14.18ms | 14.03ms |      71 |   673.21KB |
-| jpeg::writeJPEG                 |  6.17ms |  7.71ms |  7.62ms |     130 |   663.55KB |
+| foist::write\_pgm()             |  3.01ms |  3.95ms |  3.65ms |     253 |     2.49KB |
+| foist::write\_pgm(column-major) |  2.02ms |  2.53ms |  2.35ms |     395 |     2.49KB |
+| png::writePNG()                 | 12.04ms | 13.57ms | 13.57ms |      74 |   673.21KB |
+| jpeg::writeJPEG                 |  5.91ms |  7.49ms |  7.46ms |     133 |   663.55KB |
 
 Benchmark results
 
@@ -233,12 +233,12 @@ res <- bench::mark(
 )
 ```
 
-| expression                      |     min |   mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | -----: | ------: | ------: | ---------: |
-| foist::write\_ppm()             | 18.73ms | 22.6ms | 21.74ms |      44 |     2.49KB |
-| foist::write\_ppm(column-major) |  4.81ms |  6.5ms |  5.99ms |     154 |     2.49KB |
-| png::writePNG()                 | 45.21ms | 49.6ms | 49.58ms |      20 |     1.88MB |
-| jpeg::writeJPEG                 | 26.05ms | 28.8ms | 28.86ms |      35 |     1.88MB |
+| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_ppm()             | 18.45ms | 21.83ms | 21.17ms |      46 |     2.49KB |
+| foist::write\_ppm(column-major) |  4.71ms |  6.18ms |  5.68ms |     162 |     2.49KB |
+| png::writePNG()                 | 43.55ms | 48.44ms | 48.14ms |      21 |     1.88MB |
+| jpeg::writeJPEG                 |  25.6ms |    28ms |  28.1ms |      36 |     1.88MB |
 
 Benchmark results
 
