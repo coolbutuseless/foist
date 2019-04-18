@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.1-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.2-blue.svg)
 <!-- badges: end -->
 
 #### `foist` is a very fast way to output a matrix or array to a lossless image file.
@@ -35,10 +35,10 @@ library**
 
 ## What’s in the box
 
-  - `write_pgm()` - write a matrix to a grey image
-  - `write_ppm()` - write an array to an RGB image
-  - `write_pal_ppm()` write a matrix to an RGB image using a supplied
-    palette
+  - `write_pnm()` which can
+      - write an array to an RGB image
+      - write a matrix to a grey image
+      - write a matrix to a RGB image with a supplied palette
   - `vir` 5 palettes from
     [viridis](https://cran.r-project.org/package=viridis) in the
     appropriate format
@@ -93,17 +93,16 @@ dbl_arr <- array(c(r, g, b), dim = c(nrow, ncol, 3))
 
 ## Save a *2D matrix* as a grey image
 
-A 2D numeric **matrix** can be saved as a grey image using
-`write_pgm()`.
+A 2D numeric **matrix** can be saved as a grey image..
 
 The matrix values must be in the range \[0, 1\]. Use the
 `intensity_factor` argument to scale image values on-the-fly as they are
 written to file.
 
 ``` r
-write_pgm(dbl_mat, "man/figures/col-0-n.pgm")
-write_pgm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
-write_pgm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
+write_pnm(dbl_mat, "man/figures/col-0-n.pgm")
+write_pnm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
+write_pnm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
 ```
 
 <div>
@@ -124,9 +123,9 @@ The array values must be in the range \[0, 1\]. Use the
 written to file.
 
 ``` r
-write_ppm(dbl_arr, filename = "man/figures/col-1-n.ppm")
-write_ppm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
-write_ppm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
+write_pnm(dbl_arr, filename = "man/figures/col-1-n.ppm")
+write_pnm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
+write_pnm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
 ```
 
 <div>
@@ -139,28 +138,23 @@ write_ppm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = 
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
-Using `write_pal_ppm()`, `foist` can write a grey image as an RGB image
-by using each grey pixel value to lookup an RGB colour in a given
-palette.
+`foist` can write a grey image as an RGB image by using each grey pixel
+value to lookup an RGB colour in a given palette.
 
 A palette must be an integer matrix with dimensions 256 x 3 and values
 in the range \[0, 255\].
-
-The matrix values must be in the range \[0, 1\]. Use the
-`intensity_factor` argument to scale image values on-the-fly as they are
-written to file.
 
 `foist` includes the 5 palettes from
 [viridis](https://cran.r-project.org/package=viridis) as `vir$magma`
 etc.
 
 ``` r
-foist::write_pgm    (dbl_mat,                           "man/figures/col-0.pgm")
-foist::write_pal_ppm(dbl_mat, pal = foist::vir$magma  , "man/figures/col-3.ppm")
-foist::write_pal_ppm(dbl_mat, pal = foist::vir$inferno, "man/figures/col-4.ppm")
-foist::write_pal_ppm(dbl_mat, pal = foist::vir$plasma , "man/figures/col-5.ppm")
-foist::write_pal_ppm(dbl_mat, pal = foist::vir$viridis, "man/figures/col-6.ppm")
-foist::write_pal_ppm(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.ppm")
+foist::write_pnm(dbl_mat,                           "man/figures/col-0.pgm")
+foist::write_pnm(dbl_mat, pal = foist::vir$magma  , "man/figures/col-3.ppm")
+foist::write_pnm(dbl_mat, pal = foist::vir$inferno, "man/figures/col-4.ppm")
+foist::write_pnm(dbl_mat, pal = foist::vir$plasma , "man/figures/col-5.ppm")
+foist::write_pnm(dbl_mat, pal = foist::vir$viridis, "man/figures/col-6.ppm")
+foist::write_pnm(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.ppm")
 ```
 
 <div>
@@ -176,9 +170,10 @@ foist::write_pal_ppm(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.ppm")
 
 ## Benchmark: Saving a matrix as a grey image
 
-The following benchmark compares:
+The following benchmarks the output of a 2D numeric matrix to a grey
+image.
 
-  - `foist::write_pgm()` in both row-major and column-major ordering
+  - `foist::write_pnm()` in both row-major and column-major ordering
       - by **not** converting to row-major ordering the data is written
         in the same order it is stored in R. By minimizing this data
         manipulation some significant speedups are achieved.
@@ -192,9 +187,9 @@ The following benchmark compares:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_pgm()`                    = foist::write_pgm(dbl_mat, tmp),
-  `foist::write_pgm(column-major)`        = foist::write_pgm(dbl_mat, tmp, convert_to_row_major = FALSE),
-  `foist::write_pgm(column-major, flipy)` = foist::write_pgm(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE),
+  `foist::write_pnm()`                    = foist::write_pnm(dbl_mat, tmp),
+  `foist::write_pnm(column-major)`        = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_pnm(column-major, flipy)` = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE),
   `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
   `jpeg::writeJPEG`                       = jpeg::writeJPEG (dbl_mat, tmp),
   min_time = 2, check = FALSE
@@ -203,11 +198,11 @@ res <- bench::mark(
 
 | expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pgm()                    |  2.97ms |  4.29ms |  4.11ms |     233 |     2.49KB |
-| foist::write\_pgm(column-major)        |  2.04ms |  2.45ms |   2.3ms |     408 |     2.49KB |
-| foist::write\_pgm(column-major, flipy) |  2.05ms |  2.46ms |  2.32ms |     407 |     2.49KB |
-| png::writePNG()                        | 11.88ms | 14.27ms | 13.78ms |      70 |   673.21KB |
-| jpeg::writeJPEG                        |  6.06ms |  7.74ms |  7.62ms |     129 |   663.55KB |
+| foist::write\_pnm()                    |  2.95ms |  3.87ms |  3.56ms |     258 |     2.49KB |
+| foist::write\_pnm(column-major)        |  2.05ms |  2.48ms |  2.36ms |     403 |     2.49KB |
+| foist::write\_pnm(column-major, flipy) |  2.06ms |  2.57ms |  2.38ms |     390 |     2.49KB |
+| png::writePNG()                        | 12.09ms | 13.63ms | 13.65ms |      73 |   673.21KB |
+| jpeg::writeJPEG                        |  6.09ms |  7.58ms |   7.5ms |     132 |   663.55KB |
 
 Benchmark results
 
@@ -215,9 +210,10 @@ Benchmark results
 
 ## Benchmark: Saving an array as an RGB image
 
-The following benchmark compares:
+The following benchmarks the output of a 3D numeric array to a colour
+image.
 
-  - `foist::write_ppm()` in both row-major and column-major ordering
+  - `foist::write_pnm()` in both row-major and column-major ordering
       - by **not** converting to row-major ordering the data is written
         in the same order it is stored in R. By minimizing this data
         manipulation some significant speedups are achieved.
@@ -231,9 +227,9 @@ The following benchmark compares:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_ppm()`                    = foist::write_ppm(dbl_arr, tmp),
-  `foist::write_ppm(column-major)`        = foist::write_ppm(dbl_arr, tmp, convert_to_row_major = FALSE),
-  `foist::write_ppm(column-major, flipy)` = foist::write_ppm(dbl_arr, tmp, convert_to_row_major = FALSE, flipy = TRUE),
+  `foist::write_pnm()`                    = foist::write_pnm(dbl_arr, tmp),
+  `foist::write_pnm(column-major)`        = foist::write_pnm(dbl_arr, tmp, convert_to_row_major = FALSE),
+  `foist::write_pnm(column-major, flipy)` = foist::write_pnm(dbl_arr, tmp, convert_to_row_major = FALSE, flipy = TRUE),
   `png::writePNG()`                       = png::writePNG   (dbl_arr, tmp),
   `jpeg::writeJPEG`                       = jpeg::writeJPEG (dbl_arr, tmp),
   min_time = 2, check = FALSE
@@ -242,11 +238,11 @@ res <- bench::mark(
 
 | expression                             |     min |    mean |  median | itr/sec | mem\_alloc |
 | :------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_ppm()                    | 18.19ms | 21.48ms | 21.45ms |      47 |     2.49KB |
-| foist::write\_ppm(column-major)        |  4.67ms |   5.9ms |  5.59ms |     170 |     2.49KB |
-| foist::write\_ppm(column-major, flipy) |  4.66ms |  5.97ms |   5.6ms |     168 |     2.49KB |
-| png::writePNG()                        | 44.73ms | 48.52ms | 48.69ms |      21 |     1.88MB |
-| jpeg::writeJPEG                        | 26.04ms |  28.1ms |  28.1ms |      36 |     1.88MB |
+| foist::write\_pnm()                    | 18.45ms | 21.83ms | 21.67ms |      46 |     2.49KB |
+| foist::write\_pnm(column-major)        |  4.76ms |  5.99ms |  5.73ms |     167 |     2.49KB |
+| foist::write\_pnm(column-major, flipy) |     5ms |  6.33ms |  5.82ms |     158 |     2.49KB |
+| png::writePNG()                        | 45.55ms | 48.29ms | 47.83ms |      21 |     1.88MB |
+| jpeg::writeJPEG                        | 25.82ms | 28.44ms | 28.33ms |      35 |     1.88MB |
 
 Benchmark results
 

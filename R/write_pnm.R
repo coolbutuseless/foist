@@ -1,8 +1,9 @@
 
 
-#' Write a numeric array to a PPM file
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Write a numeric matrix or array to a NETPBM PNM file
 #'
-#' @param arr numeric array with 3 planes.
+#' @param data numeric 2d matrix or 3d array (with 3 planes)
 #' @param filename output filename e.g. "example.ppm"
 #' @param convert_to_row_major Convert to row-major order before output. R stores matrix
 #'        and array data in column-major order. In order to output row-major order (as
@@ -15,7 +16,10 @@
 #'        (note: no checking is performed to ensure values remain in range [0, 1]).
 #'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
 #'        to set the maximum value to 1.0. Default: intensity_factor = 1.0
-#'
-write_ppm <- function(arr, filename, convert_to_row_major = TRUE, flipy = FALSE, intensity_factor = 1) {
-    invisible(.Call(`_foist_write_ppm_core`, arr, dim(arr), filename, convert_to_row_major, flipy, intensity_factor))
+#' @param pal integer matrix of size 256x3 with values in the range [0, 255]. Each
+#'        row represents the r, g, b colour for a given grey index value. Only used
+#'        if \code{data} is a matrix
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write_pnm <- function(data, filename, convert_to_row_major = TRUE, flipy = FALSE, intensity_factor = 1, pal = NULL) {
+    invisible(.Call(`_foist_write_pnm_core`, data, dim(data), filename, convert_to_row_major, flipy, intensity_factor, pal))
 }
