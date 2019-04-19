@@ -16,35 +16,33 @@
 
 <br/>
 
-**`foist` writes lossless grey image files \~5.5x faster than the `png`
-library.**
+**`foist` can write lossless grey image files \~5.5x faster than the
+`png` library.**
 
-**`foist` writes lossless RGB image files \~7.5x faster than the `png`
-library**
+**`foist` can write lossless RGB image files \~7.5x faster than the
+`png` library.**
 
-**`foist` allocates 300-1000x *less* memory than png.**
+**`foist` allocates a lot less memory than other methods.**
 
 <br/>
 
-  - Only supports writing (lossless) images:
+  - Supports writing lossless images in two formats:
       - [NETPBM](http://netpbm.sourceforge.net/) PGM (grey) and PPM
         (RGB) files
       - [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics)
         files - Grey, RGB or with a fixed 256 colour palette.
   - Only supports 8-bits-per-channel grey and RGB images.
-  - Uses [Rcpp](https://cran.r-project.org/package=Rcpp) to do
-      - type conversion from *double* to *unsigned byte*, and
-      - data re-ordering from R’s column-major ordering to image output
-        with row-major ordering
-  - By specifying `convert_to_row_major = FALSE` the image data-ordering
-    is not converted from R’s native data ordering - this makes image
-    saving very fast as data manipulation operations are minimised and
-    cache coherency is much improved. However, the image will appear
-    tranposed in the output.
+  - Part of the speed of `foist` comes from using
+    [Rcpp](https://cran.r-project.org/package=Rcpp) to quickly scale,
+    manipulate and re-order data for image output.
+  - The fastest output speed is achieved by writing the data in the same
+    order in which it is stored in R (column major ordering). The price
+    paid for this speed is that the image will appear transposed in the
+    output.
 
 ## What’s in the box
 
-  - `write_pnm()` and `write_png()` which can
+  - `write_pnm()` and `write_png()` which can both:
       - write an array to an RGB image
       - write a matrix to a grey image
       - write a matrix to a RGB image with a supplied palette
@@ -55,13 +53,14 @@ library**
 This package would not be possible without:
 
   - [Rcpp](https://cran.r-project.org/package=Rcpp) - The easiest way to
-    get fast C/C++ code into R
-  - [viridis](https://cran.r-project.org/package=viridis) - The
-    wonderful palettes originally from
-    [matplotlib](http://matplotlib.org)
+    get fast C/C++ code into R.
+  - [viridis](https://cran.r-project.org/package=viridis) - Wnderful
+    palettes originally from [matplotlib](http://matplotlib.org).
   - [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid,
-    uncompressed image format
-  - [PNG](https://www.w3.org/TR/PNG/)
+    uncompressed image format.
+  - [PNG](https://www.w3.org/TR/PNG/) - A 20-year old, rock-solid image
+    format with lossless compression (which also supports uncompressed
+    image data).
 
 ## Caveats
 
@@ -69,24 +68,39 @@ Don’t look at my C/C++ code unless you’d like a heart attack.
 
 ## Technical Notes
 
-  - `foist` contains a bespoke PNG encoder I wrote in C++
-      - Encoder uses Mark Adler’s `adler32.c` code from
+  - `foist` contains a bespoke, minimalist PNG encoder I wrote in C++
+      - This was written so I’d have complete control over the image
+        output.
+      - There is no lossless compression enabled in this PNG encoder
+        i.e. only uncompressed DEFLATE blocks are used (see
+        <https://datatracker.ietf.org/doc/rfc1951> Sect 3.2.4).
+      - The IDAT and ZLIB/DEFLATE blocks are output in sync
+        (one-DEFLATE-block-per-IDAT-chunk) as this made the PNG
+        implementation much simpler.
+      - The encoder uses Mark Adler’s `adler32.c` code from
         [zlib](https://www.zlib.net/) Copyright (C) 1995-2011, 2016 Mark
-        Adler
+        Adler.
       - A SIMD version of `adler32()` is included but not enabled by
-        default. See `#define ADLER_SIMD` in `write-png.cpp`
+        default. The speed gains weren’t significant enough for the
+        machine imcompatibility headaches it would introduce. See
+        `#define ADLER32_SSE` in `write-png.cpp` if you’d like to try
+        it.
       - `crc32` implementation is a very fast slice-by-16 implementation
         by [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
         This is noticeably much faster than the slice-by-4 crc32 that
-        comes with the standard [zlib library](https://www.zlib.net/) or
-        in the R package
-        [digest](https://cran.r-project.org/package=digest)
+        comes with the standard [zlib library](https://www.zlib.net/).
   - When converting the numeric values to unsigned bytes for image
-    output, they are truncated to integer rather than rounded
+    output, they are truncated to integer rather than rounded.
+  - Because PNG data also needs CRC32 and ADLER32 checksumming it is
+    generally slower than PGM/PPM output.
+  - However, writing a matrix with a palette will be faster in PNG as it
+    has direct support for indexed colours, whereas for a NETPBM PPM
+    file the intensity values need to be explicitly mapped to an RGB
+    triplet and then written out in full.
 
 ## Installation
 
-You can install the development version from
+You can install the package from
 [GitHub](https://github.com/coolbutuseless/foist) with:
 
 ``` r
@@ -96,10 +110,10 @@ devtools::install_github("coolbutuseless/foist")
 
 ## Setup data
 
-  - `dbl_mat` - A numeric matrix to output to a grey image. All values
-    in range \[0, 1\]
-  - `dbl_arr` - A 3d numeric array to output to an RGB image. All values
-    in range \[0, 1\]
+  - `dbl_mat` - A 2D numeric matrix for output to a grey image. All
+    values in range \[0, 1\]
+  - `dbl_arr` - A 3d numeric array for output to an RGB image. All
+    values in range \[0, 1\]
 
 <!-- end list -->
 
@@ -119,11 +133,14 @@ dbl_arr <- array(c(r, g, b), dim = c(nrow, ncol, 3))
 
 ## Save a *2D matrix* as a grey image
 
-A 2D numeric **matrix** can be saved as a grey image..
+`write_png()` and `write_pnm()` will save a 2D numeric **matrix** as a
+grey image.
 
-The matrix values must be in the range \[0, 1\]. Use the
-`intensity_factor` argument to scale image values on-the-fly as they are
-written to file.
+  - The matrix values must be in the range \[0, 1\].
+  - Use the `intensity_factor` argument to scale image values on-the-fly
+    as they are written to file.
+
+<!-- end list -->
 
 ``` r
 # NETPBM PGM
@@ -147,12 +164,16 @@ write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 
 ## Save a *3D array* as an RGB image
 
-An NxMx3 **array** can be saved as an RGB image. Each of the colours is
-represented of one of the 3 planes of the array.
+`write_png()` and `write_pnm()` will save a 3D numeric **array** as an
+RGB image.
 
-The array values must be in the range \[0, 1\]. Use the
-`intensity_factor` argument to scale image values on-the-fly as they are
-written to file.
+  - Array dimensions must be NxMx3 where the 3 colour planes correspond
+    to the third dimension of the array.
+  - The matrix values must be in the range \[0, 1\].
+  - Use the `intensity_factor` argument to scale image values on-the-fly
+    as they are written to file.
+
+<!-- end list -->
 
 ``` r
 # NETPBM PPM format
@@ -176,14 +197,16 @@ write_pnm(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = 
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
-`foist` can write a grey image as an RGB image by using each grey pixel
-value to lookup an RGB colour in a given palette.
+`write_png()` and `write_pnm()` will save a 2D numeric **matrix** as an
+RGB image if also supplied with a colour palette.
 
-Using `write_png()` to write a paletted image will be faster than
-`write_pnm()` because the PNG format directly supports palettes.
-
-A palette must be an integer matrix with dimensions 256 x 3 and values
-in the range \[0, 255\].
+  - A palette must be an integer matrix with dimensions 256 x 3 and
+    values in the range \[0, 255\].
+  - Pixel values in the matrix are first scaled into the range \[0,
+    255\] and are then mapped to one of the RGB colours in the palette.
+  - The matrix values must be in the range \[0, 1\].
+  - Use the `intensity_factor` argument to scale image values on-the-fly
+    as they are written to file.
 
 `foist` includes the 5 palettes from
 [viridis](https://cran.r-project.org/package=viridis) as `vir$magma`
@@ -224,9 +247,7 @@ The following benchmark compares the time to output of a grey image
 using:
 
   - `foist::write_pnm()` in both row-major and column-major ordering
-      - by **not** converting to row-major ordering the data is written
-        in the same order it is stored in R. By minimizing this data
-        manipulation some significant speedups are achieved.
+  - `foist::write_png()` in both row-major and column-major ordering
   - `png::writePNG()`
 
 <!-- end list -->
@@ -246,13 +267,13 @@ res <- bench::mark(
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()             |  3.04ms |   4.5ms |  4.16ms |     222 |     2.49KB |
-| foist::write\_pnm(column-major) |  2.07ms |  2.63ms |  2.44ms |     380 |     2.49KB |
-| foist::write\_png()             |  3.34ms |  4.11ms |  3.84ms |     243 |     2.49KB |
-| foist::write\_png(column-major) |  2.45ms |  2.95ms |  2.76ms |     339 |     2.49KB |
-| png::writePNG()                 | 12.31ms | 14.45ms | 14.22ms |      69 |   673.21KB |
+| expression                      |    min |   mean |  median | itr/sec | mem\_alloc |
+| :------------------------------ | -----: | -----: | ------: | ------: | ---------: |
+| foist::write\_pnm()             | 3.06ms | 4.41ms |  4.16ms |     227 |     2.49KB |
+| foist::write\_pnm(column-major) |  2.1ms | 2.62ms |  2.44ms |     382 |     2.49KB |
+| foist::write\_png()             | 3.38ms | 4.29ms |  4.02ms |     233 |     2.49KB |
+| foist::write\_png(column-major) | 2.33ms |  2.9ms |  2.75ms |     344 |     2.49KB |
+| png::writePNG()                 | 12.4ms | 14.4ms | 14.27ms |      69 |   673.21KB |
 
 Benchmark results
 
@@ -264,9 +285,7 @@ The following benchmark compares the time to output a colour image
 using:
 
   - `foist::write_pnm()` in both row-major and column-major ordering
-      - by **not** converting to row-major ordering the data is written
-        in the same order it is stored in R. By minimizing this data
-        manipulation some significant speedups are achieved.
+  - `foist::write_png()` in both row-major and column-major ordering
   - `png::writePNG()`
 
 <!-- end list -->
@@ -281,18 +300,21 @@ res <- bench::mark(
   `foist::write_png()`                    = foist::write_png(dbl_arr, tmp),
   `foist::write_png(column-major)`        = foist::write_png(dbl_arr, tmp, convert_to_row_major = FALSE),
   
+  `foist::write_png(indexed colour)`      = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, pal = foist::vir$magma),
+  
   `png::writePNG()`                       = png::writePNG   (dbl_arr, tmp),
   min_time = 2, check = FALSE
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()             | 19.24ms | 22.57ms | 21.15ms |      44 |     2.49KB |
-| foist::write\_pnm(column-major) |  4.61ms |  6.27ms |  5.86ms |     160 |     2.49KB |
-| foist::write\_png()             | 20.11ms | 22.05ms | 21.79ms |      45 |     2.49KB |
-| foist::write\_png(column-major) |  6.12ms |  7.61ms |  7.18ms |     131 |     2.49KB |
-| png::writePNG()                 | 45.77ms | 49.74ms | 49.39ms |      20 |     1.88MB |
+| expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
+| :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm()               | 18.73ms |  22.5ms | 22.58ms |      44 |     2.49KB |
+| foist::write\_pnm(column-major)   |  4.86ms |  6.45ms |  6.05ms |     155 |     2.49KB |
+| foist::write\_png()               | 19.69ms | 22.28ms | 22.23ms |      45 |     2.49KB |
+| foist::write\_png(column-major)   |  6.27ms |  7.68ms |  7.31ms |     130 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.41ms |  2.98ms |  2.77ms |     336 |     2.49KB |
+| png::writePNG()                   |  46.4ms | 50.09ms |  49.7ms |      20 |     1.88MB |
 
 Benchmark results
 

@@ -34,31 +34,29 @@ knitr::opts_chunk$set(
 
 <br/>
 
-**`foist` writes lossless grey image files ~5.5x faster than the `png` library.**
+**`foist` can write lossless grey image files ~5.5x faster than the `png` library.**
 
-**`foist` writes lossless RGB image files ~7.5x faster than the `png` library**
+**`foist` can write lossless RGB image files ~7.5x faster than the `png` library.**
 
-**`foist` allocates 300-1000x *less* memory than png.**
+**`foist` allocates a lot less memory than other methods.**
 
 <br/>
 
-* Only supports writing (lossless) images:
+* Supports writing lossless images in two formats:
     * [NETPBM](http://netpbm.sourceforge.net/)  PGM (grey) and PPM (RGB) files
     * [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) files - Grey, RGB or with a fixed 256 colour palette.
 * Only supports 8-bits-per-channel grey and RGB images.
-* Uses [Rcpp](https://cran.r-project.org/package=Rcpp) to do 
-    * type conversion from *double* to *unsigned byte*, and 
-    * data re-ordering from R's column-major ordering to image output with row-major ordering
-* By specifying `convert_to_row_major = FALSE` the image data-ordering is not converted
-  from R's native data ordering - this makes image saving very fast as data manipulation
-  operations are minimised and cache coherency is much improved.  However, the
-  image will appear tranposed in the output.
+* Part of the speed of `foist` comes from using [Rcpp](https://cran.r-project.org/package=Rcpp) 
+  to quickly scale, manipulate and re-order data for image output.
+* The fastest output speed is achieved by writing the data in the same order
+  in which it is stored in R (column major ordering).  The price paid 
+  for this speed is that the image will appear transposed in the output.
 
 
 
 ## What's in the box
 
-* `write_pnm()` and `write_png()` which can
+* `write_pnm()` and `write_png()` which can both:
     - write an array to an RGB image
     - write a matrix to a grey image
     - write a matrix to a RGB image with a supplied palette
@@ -66,10 +64,10 @@ knitr::opts_chunk$set(
 
 This package would not be possible without:
 
-* [Rcpp](https://cran.r-project.org/package=Rcpp) - The easiest way to get fast C/C++ code into R
-* [viridis](https://cran.r-project.org/package=viridis) - The wonderful palettes originally from [matplotlib](http://matplotlib.org)
-* [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid, uncompressed image format
-* [PNG](https://www.w3.org/TR/PNG/)
+* [Rcpp](https://cran.r-project.org/package=Rcpp) - The easiest way to get fast C/C++ code into R.
+* [viridis](https://cran.r-project.org/package=viridis) - Wnderful palettes originally from [matplotlib](http://matplotlib.org).
+* [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid, uncompressed image format.
+* [PNG](https://www.w3.org/TR/PNG/) - A 20-year old, rock-solid image format with lossless compression (which also supports uncompressed image data).
 
 
 ## Caveats
@@ -78,18 +76,34 @@ Don't look at my C/C++ code unless you'd like a heart attack.
 
 ## Technical Notes
 
-* `foist` contains a bespoke PNG encoder I wrote in C++
-    * Encoder uses Mark Adler's `adler32.c` code from [zlib](https://www.zlib.net/) Copyright (C) 1995-2011, 2016 Mark Adler
-    * A SIMD version of `adler32()` is included but not enabled by default. See `#define ADLER_SIMD` in `write-png.cpp`
-    * `crc32` implementation is a very fast slice-by-16 implementation by [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
-      This is noticeably much faster than the slice-by-4 crc32 that comes with the standard [zlib library](https://www.zlib.net/) 
-      or in the R package [digest](https://cran.r-project.org/package=digest)
+* `foist` contains a bespoke, minimalist PNG encoder I wrote in C++
+    * This was written so I'd have complete control over the image output.
+    * There is no lossless compression enabled in this PNG encoder i.e. only 
+      uncompressed DEFLATE blocks are used (see [https://datatracker.ietf.org/doc/rfc1951](https://datatracker.ietf.org/doc/rfc1951) Sect 3.2.4).
+    * The IDAT and ZLIB/DEFLATE blocks are output in sync (one-DEFLATE-block-per-IDAT-chunk) 
+      as this made the PNG implementation much simpler.
+    * The encoder uses Mark Adler's `adler32.c` code from [zlib](https://www.zlib.net/) 
+      Copyright (C) 1995-2011, 2016 Mark Adler.
+    * A SIMD version of `adler32()` is included but not enabled by default. 
+      The speed gains weren't significant enough for the machine imcompatibility
+      headaches it would introduce. 
+      See `#define ADLER32_SSE` in `write-png.cpp` if you'd like to try it.
+    * `crc32` implementation is a very fast slice-by-16 implementation by 
+      [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
+      This is noticeably much faster than the slice-by-4 crc32 that comes with 
+      the standard [zlib library](https://www.zlib.net/).
 * When converting the numeric values to unsigned bytes for image output, they 
-  are truncated to integer rather than rounded
+  are truncated to integer rather than rounded.
+* Because PNG data also needs CRC32 and ADLER32 checksumming it is generally
+  slower than PGM/PPM output.
+* However, writing a matrix with a palette will be faster in PNG as it has direct support 
+  for indexed colours, whereas for a NETPBM PPM file
+  the intensity values need to be explicitly mapped to an RGB triplet and then
+  written out in full.
 
 ## Installation
 
-You can install the development version from [GitHub](https://github.com/coolbutuseless/foist) with:
+You can install the package from [GitHub](https://github.com/coolbutuseless/foist) with:
 
 ``` r
 # install.packages("devtools")
@@ -98,8 +112,8 @@ devtools::install_github("coolbutuseless/foist")
 
 ## Setup data
 
-* `dbl_mat` - A numeric matrix to output to a grey image. All values in range [0, 1]
-* `dbl_arr` - A 3d numeric array to output to an RGB image. All values in range [0, 1]
+* `dbl_mat` - A 2D numeric matrix for output to a grey image. All values in range [0, 1]
+* `dbl_arr` - A 3d numeric array for output to an RGB image. All values in range [0, 1]
 
 ```{r}
 ncol    <- 256
@@ -118,10 +132,10 @@ dbl_arr <- array(c(r, g, b), dim = c(nrow, ncol, 3))
 
 ## Save a *2D matrix* as a grey image
 
-A 2D numeric **matrix** can be saved as a grey image..
+`write_png()` and `write_pnm()` will save a 2D numeric **matrix** as a grey image.
 
-The matrix values must be in the range [0, 1]. Use the `intensity_factor` argument to 
-scale image values on-the-fly as they are written to file.
+* The matrix values must be in the range [0, 1]. 
+* Use the `intensity_factor` argument to scale image values on-the-fly as they are written to file.
 
 ```{r example_pgm}
 # NETPBM PGM
@@ -152,11 +166,14 @@ system("convert man/figures/col-0-t.pgm -define png:exclude-chunks=date,time man
 
 ## Save a *3D array* as an RGB image 
 
-An NxMx3 **array** can be saved as an RGB image. Each of the colours is represented
-of one of the 3 planes of the array.
 
-The array values must be in the range [0, 1]. Use the `intensity_factor` argument to 
-scale image values on-the-fly as they are written to file.
+`write_png()` and `write_pnm()` will save a 3D numeric **array** as an RGB image.
+
+* Array dimensions must be NxMx3 where the 3 colour planes correspond to the
+  third dimension of the array.
+* The matrix values must be in the range [0, 1]. 
+* Use the `intensity_factor` argument to scale image values on-the-fly as they are written to file.
+    
 
 ```{r example_ppm}
 # NETPBM PPM format
@@ -186,14 +203,17 @@ system("convert man/figures/col-1-t.ppm -define png:exclude-chunks=date,time man
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
-`foist` can write a grey image as an RGB image by using 
-each grey pixel value to lookup an RGB colour in a given palette.
 
-Using `write_png()` to write a paletted image will be faster than `write_pnm()`
-because the PNG format directly supports palettes.
+`write_png()` and `write_pnm()` will save a 2D numeric **matrix** as an RGB image if also supplied with a colour palette.
 
-A palette must be an integer matrix with dimensions 256 x 3 and values in the
-range [0, 255].
+* A palette must be an integer matrix with dimensions 256 x 3 and values in the
+  range [0, 255].
+* Pixel values in the matrix are first scaled into the range [0, 255] and 
+  are then mapped to one of the RGB colours in the palette.
+* The matrix values must be in the range [0, 1]. 
+* Use the `intensity_factor` argument to scale image values on-the-fly as they are written to file.
+    
+
 
 `foist` includes the 5 palettes from [viridis](https://cran.r-project.org/package=viridis) as `vir$magma` etc.
 
@@ -264,9 +284,7 @@ dbl_arr <- array(c(r, g, b), dim = c(nrow, ncol, 3))
 The following benchmark compares the time to output of a grey image using:
 
 * `foist::write_pnm()` in both row-major and column-major ordering
-    * by **not** converting to row-major ordering the data is written in  the same order it 
-      is stored in R.  By minimizing this data manipulation some significant 
-      speedups are achieved.
+* `foist::write_png()` in both row-major and column-major ordering
 * `png::writePNG()`
 
 
@@ -305,10 +323,9 @@ plot(res) +
 
 The following benchmark compares the time to output a colour image using:
 
+
 * `foist::write_pnm()` in both row-major and column-major ordering
-    * by **not** converting to row-major ordering the data is written in  the same order it 
-      is stored in R.  By minimizing this data manipulation some significant 
-      speedups are achieved.
+* `foist::write_png()` in both row-major and column-major ordering
 * `png::writePNG()`
 
 
@@ -323,6 +340,8 @@ res <- bench::mark(
   
   `foist::write_png()`                    = foist::write_png(dbl_arr, tmp),
   `foist::write_png(column-major)`        = foist::write_png(dbl_arr, tmp, convert_to_row_major = FALSE),
+  
+  `foist::write_png(indexed colour)`      = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, pal = foist::vir$magma),
   
   `png::writePNG()`                       = png::writePNG   (dbl_arr, tmp),
   min_time = 2, check = FALSE
