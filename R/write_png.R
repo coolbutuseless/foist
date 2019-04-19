@@ -1,7 +1,18 @@
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Write a numeric matrix or array to a NETPBM PNM file
+#' Write a numeric matrix or array to a PNG file
+#'
+#' Write a numeric matrix or array to a PNG file
+#'
+#'
+#' Write a numeric matrix or array to a PNG file as fast as possible - meaning
+#' that corners are cut to make it happen quickly:
+#'
+#' \itemize{
+#' \item{Data is not compressed.}
+#' \item{Matrix or array must be of type \code{numeric}}
+#' \item{When converting to unsigned bytes for output, values are truncated rather than rounded}
+#' }
 #'
 #' @param data numeric 2d matrix or 3d array (with 3 planes)
 #' @param filename output filename e.g. "example.ppm"
@@ -22,6 +33,9 @@
 #'        row represents the r, g, b colour for a given grey index value. Only used
 #'        if \code{data} is a matrix
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_pnm <- function(data, filename, convert_to_row_major = TRUE, flipy = FALSE, intensity_factor = 1, pal = NULL) {
-    invisible(.Call(`_foist_write_pnm_core`, data, dim(data), filename, convert_to_row_major, flipy, intensity_factor, pal))
+write_png <- function(data, filename, convert_to_row_major = TRUE, flipy = FALSE, intensity_factor = 1, pal = NULL) {
+    invisible(.Call(`_foist_write_png_core`, data, dim(data), filename, convert_to_row_major, flipy, intensity_factor, pal))
 }
+
+
+

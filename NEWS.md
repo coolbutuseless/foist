@@ -1,5 +1,10 @@
 
 
+# foist 0.1.3
+
+* Added PNG support
+
+
 # foist 0.1.2
 
 * Refactored `write_pgm()`, `write_ppm()`, `write_pal_pgm()` 
