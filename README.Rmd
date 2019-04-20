@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.3-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.5-blue.svg)
 ![](https://img.shields.io/badge/Output-PNG-green.svg)
 ![](https://img.shields.io/badge/Output-PGM-green.svg)
 ![](https://img.shields.io/badge/Output-PPM-green.svg)
@@ -162,21 +162,31 @@ system("convert man/figures/col-0-t.pgm -define png:exclude-chunks=date,time man
 ```
 
 <div>
-  <img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
-  <img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
-  <img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
-  <img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Default
+  <img src = "man/figures/col-convert-0-n.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Invert colour
+  <img src = "man/figures/col-convert-0-i.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Flip Y
+  <img src = "man/figures/col-convert-0-f.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Column-major output
+  <img src = "man/figures/col-convert-0-t.png"  width = "62%">
+  </div>
 </div>
 
 
-<div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Default</div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Invert Colour</div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Flip Y</div>
-  <div style = "float:left; width:16%; margin-left: 1%;">Output as column-major</div>
-</div>
 
 <div style="clear: both;">
+
 
 ## Save a *3D array* as an RGB image 
 
@@ -210,24 +220,33 @@ system("convert man/figures/col-1-f.ppm -define png:exclude-chunks=date,time man
 system("convert man/figures/col-1-t.ppm -define png:exclude-chunks=date,time man/figures/col-convert-1-t.png")
 ```
 
-<div>
-  <img src = "man/figures/col-convert-1-n.png"  width = "25%"> 
-  <img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
-  <img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
-  <img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
-</div>
 
 
 <div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Default</div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Invert Colour</div>
-  <div style = "float:left; width:25%; margin-left: 1%;">Flip Y</div>
-  <div style = "float:left; width:16%; margin-left: 1%;">Output as column-major</div>
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Default
+  <img src = "man/figures/col-convert-1-n.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Invert colour
+  <img src = "man/figures/col-convert-1-i.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Flip Y
+  <img src = "man/figures/col-convert-1-f.png"  width = "100%">
+  </div>
+  
+  <div style = "width: 23%; float: left; margin-left: 1%">
+  Column-major output
+  <img src = "man/figures/col-convert-1-t.png"  width = "62%">
+  </div>
 </div>
+
+
 
 <div style="clear: both;">
-
-
 
 
 ## Save a *matrix* to an RGB image using a palette lookup
@@ -375,17 +394,25 @@ system(command)
 
 
 <div>
-  <div style = "float:left; width:30%; margin-left: 10px;">Reduce colours</div>
-  <div style = "float:left; width:30%; margin-left: 10px;">Rotate palette</div>
-  <div style = "float:left; width:30%; margin-left: 10px;">Cross-fade between palettes</div>
+  <div style = "width: 31%; float: left; margin-left: 1%">
+  Reduce colours
+  <img src = "man/figures/pal-anim1.gif"  width = "100%">
+  </div>
+  
+  <div style = "width: 31%; float: left; margin-left: 1%">
+  Rotate palette
+  <img src = "man/figures/pal-anim2.gif"  width = "100%">
+  </div>
+  
+  <div style = "width: 31%; float: left; margin-left: 1%">
+  Cross-fade between palettes
+  <img src = "man/figures/pal-anim3.gif"  width = "100%">
+  </div>
 </div>
 
 
-<div>
-  <img src = "man/figures/pal-anim1.gif" width = "30%" title = "palette reduce">
-  <img src = "man/figures/pal-anim2.gif" width = "30%" title = "palette rotate">
-  <img src = "man/figures/pal-anim3.gif" width = "30%" title = "palette crossfade">
-</div>
+
+<div style="clear: both;">
 
 
 
@@ -423,11 +450,12 @@ The following benchmark compares the time to output of a grey image using:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_pnm()`                    = foist::write_pnm(dbl_mat, tmp),
-  `foist::write_pnm(column-major)`        = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_pnm()`                         = foist::write_pnm(dbl_mat, tmp),
+  `foist::write_pnm(column-major)`             = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
   
-  `foist::write_png()`                    = foist::write_png(dbl_mat, tmp),
-  `foist::write_png(column-major)`        = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_png()`                         = foist::write_png(dbl_mat, tmp),
+  `foist::write_png(column-major)`             = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_png(column-major:flip:invert)` = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE, invert = TRUE),
   
   `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
   min_time = 2, check = FALSE

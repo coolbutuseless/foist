@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.3-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.5-blue.svg)
 ![](https://img.shields.io/badge/Output-PNG-green.svg)
 ![](https://img.shields.io/badge/Output-PGM-green.svg)
 ![](https://img.shields.io/badge/Output-PPM-green.svg)
@@ -98,6 +98,7 @@ Don’t look at my C/C++ code unless you’d like a heart attack.
     has direct support for indexed colours, whereas for a NETPBM PPM
     file the intensity values need to be explicitly mapped to an RGB
     triplet and then written out in full.
+  - All my benchmark timings are on a machine with an SSD.
 
 ## Installation
 
@@ -159,36 +160,29 @@ write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 
 <div>
 
-<img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
-<img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
+<div style="width: 23%; float: left; margin-left: 1%">
+
+Default <img src = "man/figures/col-convert-0-n.png"  width = "100%">
 
 </div>
 
-<div>
+<div style="width: 23%; float: left; margin-left: 1%">
 
-<div style="float:left; width:25%; margin-left: 1%;">
-
-Default
-
-</div>
-
-<div style="float:left; width:25%; margin-left: 1%;">
-
-Invert Colour
+Invert colour
+<img src = "man/figures/col-convert-0-i.png"  width = "100%">
 
 </div>
 
-<div style="float:left; width:25%; margin-left: 1%;">
+<div style="width: 23%; float: left; margin-left: 1%">
 
-Flip Y
+Flip Y <img src = "man/figures/col-convert-0-f.png"  width = "100%">
 
 </div>
 
-<div style="float:left; width:16%; margin-left: 1%;">
+<div style="width: 23%; float: left; margin-left: 1%">
 
-Output as column-major
+Column-major output
+<img src = "man/figures/col-convert-0-t.png"  width = "62%">
 
 </div>
 
@@ -225,44 +219,35 @@ write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = 
 
 <div>
 
-<img src = "man/figures/col-convert-1-n.png"  width = "25%">
-<img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
+<div style="width: 23%; float: left; margin-left: 1%">
+
+Default <img src = "man/figures/col-convert-1-n.png"  width = "100%">
 
 </div>
 
-<div>
+<div style="width: 23%; float: left; margin-left: 1%">
 
-<div style="float:left; width:25%; margin-left: 1%;">
-
-Default
-
-</div>
-
-<div style="float:left; width:25%; margin-left: 1%;">
-
-Invert Colour
+Invert colour
+<img src = "man/figures/col-convert-1-i.png"  width = "100%">
 
 </div>
 
-<div style="float:left; width:25%; margin-left: 1%;">
+<div style="width: 23%; float: left; margin-left: 1%">
 
-Flip Y
+Flip Y <img src = "man/figures/col-convert-1-f.png"  width = "100%">
 
 </div>
 
-<div style="float:left; width:16%; margin-left: 1%;">
+<div style="width: 23%; float: left; margin-left: 1%">
 
-Output as column-major
+Column-major output
+<img src = "man/figures/col-convert-1-t.png"  width = "62%">
 
 </div>
 
 </div>
 
 <div style="clear: both;">
-
-
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
@@ -317,34 +302,34 @@ manipulating the palette of a sequence of image outputs.
 
 <div>
 
-<div style="float:left; width:30%; margin-left: 10px;">
+<div style="width: 31%; float: left; margin-left: 1%">
 
-Reduce colours
-
-</div>
-
-<div style="float:left; width:30%; margin-left: 10px;">
-
-Rotate palette
+Reduce colours <img src = "man/figures/pal-anim1.gif"  width = "100%">
 
 </div>
 
-<div style="float:left; width:30%; margin-left: 10px;">
+<div style="width: 31%; float: left; margin-left: 1%">
 
-Cross-fade between
-palettes
+Rotate palette <img src = "man/figures/pal-anim2.gif"  width = "100%">
+
+</div>
+
+<div style="width: 31%; float: left; margin-left: 1%">
+
+Cross-fade between palettes
+<img src = "man/figures/pal-anim3.gif"  width = "100%">
 
 </div>
 
 </div>
 
-<div>
+<div style="clear: both;">
 
-<img src = "man/figures/pal-anim1.gif" width = "30%" title = "palette reduce">
-<img src = "man/figures/pal-anim2.gif" width = "30%" title = "palette rotate">
-<img src = "man/figures/pal-anim3.gif" width = "30%" title = "palette crossfade">
 
-</div>
+
+
+
+
 
 ## Benchmark: Saving a matrix as a grey image
 
@@ -361,24 +346,26 @@ using:
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_pnm()`                    = foist::write_pnm(dbl_mat, tmp),
-  `foist::write_pnm(column-major)`        = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_pnm()`                         = foist::write_pnm(dbl_mat, tmp),
+  `foist::write_pnm(column-major)`             = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
   
-  `foist::write_png()`                    = foist::write_png(dbl_mat, tmp),
-  `foist::write_png(column-major)`        = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_png()`                         = foist::write_png(dbl_mat, tmp),
+  `foist::write_png(column-major)`             = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_png(column-major:flip:invert)` = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE, invert = TRUE),
   
   `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
   min_time = 2, check = FALSE
 )
 ```
 
-| expression                      |     min |   mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | -----: | ------: | ------: | ---------: |
-| foist::write\_pnm()             |  3.16ms | 4.31ms |  4.13ms |     232 |     2.49KB |
-| foist::write\_pnm(column-major) |   2.2ms | 2.77ms |  2.54ms |     361 |     2.49KB |
-| foist::write\_png()             |  3.54ms | 4.39ms |  4.03ms |     228 |     2.49KB |
-| foist::write\_png(column-major) |   2.3ms | 3.06ms |  2.84ms |     327 |     2.49KB |
-| png::writePNG()                 | 12.36ms | 14.3ms | 14.27ms |      70 |   673.21KB |
+| expression                                  |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------------------ | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm()                         |  3.31ms |  4.97ms |  4.65ms |     201 |     2.49KB |
+| foist::write\_pnm(column-major)             |  2.25ms |  3.02ms |  2.71ms |     331 |     2.49KB |
+| foist::write\_png()                         |  3.57ms |  5.46ms |  4.92ms |     183 |     2.49KB |
+| foist::write\_png(column-major)             |  2.46ms |  3.56ms |  3.14ms |     281 |     2.49KB |
+| foist::write\_png(column-major:flip:invert) |  2.56ms |  3.38ms |  3.03ms |     296 |     2.49KB |
+| png::writePNG()                             | 13.38ms | 17.94ms | 17.17ms |      56 |   673.21KB |
 
 Benchmark results
 
@@ -414,12 +401,12 @@ res <- bench::mark(
 
 | expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
 | :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               | 18.83ms | 21.91ms | 21.09ms |      46 |     2.49KB |
-| foist::write\_pnm(column-major)   |  5.01ms |   6.4ms |  6.03ms |     156 |     2.49KB |
-| foist::write\_png()               | 19.68ms | 21.75ms | 21.53ms |      46 |     2.49KB |
-| foist::write\_png(column-major)   |  6.34ms |  7.64ms |  7.24ms |     131 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.37ms |  2.91ms |  2.77ms |     344 |     2.49KB |
-| png::writePNG()                   | 44.39ms | 48.66ms | 48.64ms |      21 |     1.88MB |
+| foist::write\_pnm()               |  23.5ms | 31.51ms | 30.86ms |      32 |     2.49KB |
+| foist::write\_pnm(column-major)   |  5.12ms |  7.41ms |  6.75ms |     135 |     2.49KB |
+| foist::write\_png()               | 20.67ms | 23.25ms | 22.98ms |      43 |     2.49KB |
+| foist::write\_png(column-major)   |  6.61ms |  8.46ms |  7.95ms |     118 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.52ms |  3.28ms |  2.98ms |     305 |     2.49KB |
+| png::writePNG()                   | 46.39ms | 51.32ms | 50.44ms |      19 |     1.88MB |
 
 Benchmark results
 
