@@ -160,31 +160,10 @@ write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 
 <div>
 
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Default <img src = "man/figures/col-convert-0-n.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Invert colour
-<img src = "man/figures/col-convert-0-i.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Flip Y <img src = "man/figures/col-convert-0-f.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Column-major output
-<img src = "man/figures/col-convert-0-t.png"  width = "62%">
-
-</div>
+<img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
+<img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
 
 </div>
 
@@ -219,35 +198,16 @@ write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = 
 
 <div>
 
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Default <img src = "man/figures/col-convert-1-n.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Invert colour
-<img src = "man/figures/col-convert-1-i.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Flip Y <img src = "man/figures/col-convert-1-f.png"  width = "100%">
-
-</div>
-
-<div style="width: 23%; float: left; margin-left: 1%">
-
-Column-major output
-<img src = "man/figures/col-convert-1-t.png"  width = "62%">
-
-</div>
+<img src = "man/figures/col-convert-1-n.png"  width = "25%">
+<img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
 
 </div>
 
 <div style="clear: both;">
+
+
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
@@ -298,33 +258,18 @@ foist::write_png(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.png")
 ## Manipulate palettes
 
 Some visual effects can be created by keeping the same data, but
-manipulating the palette of a sequence of image outputs.
+manipulating the palette of a sequence of image
+outputs.
 
 <div>
 
-<div style="width: 31%; float: left; margin-left: 1%">
-
-Reduce colours <img src = "man/figures/pal-anim1.gif"  width = "100%">
-
-</div>
-
-<div style="width: 31%; float: left; margin-left: 1%">
-
-Rotate palette <img src = "man/figures/pal-anim2.gif"  width = "100%">
-
-</div>
-
-<div style="width: 31%; float: left; margin-left: 1%">
-
-Cross-fade between palettes
-<img src = "man/figures/pal-anim3.gif"  width = "100%">
-
-</div>
+<img src = "man/figures/pal-anim1.gif" width = "30%" title = "palette reduce">
+<img src = "man/figures/pal-anim2.gif" width = "30%" title = "palette rotate">
+<img src = "man/figures/pal-anim3.gif" width = "30%" title = "palette crossfade">
 
 </div>
 
 <div style="clear: both;">
-
 
 
 
@@ -340,32 +285,33 @@ using:
   - `foist::write_png()` in both row-major and column-major ordering
   - `png::writePNG()`
 
-<!-- end list -->
+As can be seen in the benchmark using `flipy = TRUE` or `invert = TRUE`
+have almost no speed penalty.
 
 ``` r
 tmp <- tempfile()
 
 res <- bench::mark(
-  `foist::write_pnm()`                         = foist::write_pnm(dbl_mat, tmp),
-  `foist::write_pnm(column-major)`             = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_pnm()`                          = foist::write_pnm(dbl_mat, tmp),
+  `foist::write_pnm(column-major)`              = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
   
-  `foist::write_png()`                         = foist::write_png(dbl_mat, tmp),
-  `foist::write_png(column-major)`             = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
-  `foist::write_png(column-major:flip:invert)` = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE, invert = TRUE),
+  `foist::write_png()`                          = foist::write_png(dbl_mat, tmp),
+  `foist::write_png(column-major)`              = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
+  `foist::write_png(column-major:flipy:invert)` = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE, invert = TRUE),
   
   `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
   min_time = 2, check = FALSE
 )
 ```
 
-| expression                                  |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()                         |  3.31ms |  4.97ms |  4.65ms |     201 |     2.49KB |
-| foist::write\_pnm(column-major)             |  2.25ms |  3.02ms |  2.71ms |     331 |     2.49KB |
-| foist::write\_png()                         |  3.57ms |  5.46ms |  4.92ms |     183 |     2.49KB |
-| foist::write\_png(column-major)             |  2.46ms |  3.56ms |  3.14ms |     281 |     2.49KB |
-| foist::write\_png(column-major:flip:invert) |  2.56ms |  3.38ms |  3.03ms |     296 |     2.49KB |
-| png::writePNG()                             | 13.38ms | 17.94ms | 17.17ms |      56 |   673.21KB |
+| expression                                   |     min |    mean | median | itr/sec | mem\_alloc |
+| :------------------------------------------- | ------: | ------: | -----: | ------: | ---------: |
+| foist::write\_pnm()                          |  3.14ms |  4.79ms | 4.47ms |     209 |     2.49KB |
+| foist::write\_pnm(column-major)              |  2.03ms |   2.9ms | 2.56ms |     345 |     2.49KB |
+| foist::write\_png()                          |  3.55ms |  4.55ms | 4.05ms |     220 |     2.49KB |
+| foist::write\_png(column-major)              |  2.31ms |  3.21ms | 2.91ms |     311 |     2.49KB |
+| foist::write\_png(column-major:flipy:invert) |  2.57ms |  3.28ms | 2.96ms |     305 |     2.49KB |
+| png::writePNG()                              | 12.38ms | 15.32ms |   15ms |      65 |   673.21KB |
 
 Benchmark results
 
@@ -401,12 +347,12 @@ res <- bench::mark(
 
 | expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
 | :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               |  23.5ms | 31.51ms | 30.86ms |      32 |     2.49KB |
-| foist::write\_pnm(column-major)   |  5.12ms |  7.41ms |  6.75ms |     135 |     2.49KB |
-| foist::write\_png()               | 20.67ms | 23.25ms | 22.98ms |      43 |     2.49KB |
-| foist::write\_png(column-major)   |  6.61ms |  8.46ms |  7.95ms |     118 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.52ms |  3.28ms |  2.98ms |     305 |     2.49KB |
-| png::writePNG()                   | 46.39ms | 51.32ms | 50.44ms |      19 |     1.88MB |
+| foist::write\_pnm()               | 19.17ms | 24.32ms | 23.54ms |      41 |     2.49KB |
+| foist::write\_pnm(column-major)   |  5.29ms |  7.22ms |  6.46ms |     139 |     2.49KB |
+| foist::write\_png()               |  20.3ms | 23.74ms | 22.97ms |      42 |     2.49KB |
+| foist::write\_png(column-major)   |  6.43ms |  8.02ms |  7.39ms |     125 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.43ms |  3.08ms |  2.81ms |     324 |     2.49KB |
+| png::writePNG()                   | 46.69ms | 49.21ms | 49.42ms |      20 |     1.88MB |
 
 Benchmark results
 
