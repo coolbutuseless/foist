@@ -46,16 +46,14 @@ test_that("write_pnm works for grey", {
 
       system(glue::glue("pngtopnm {ref_png} > {ref_pnm}"))
 
-
-      # Because casting from double to unsigned char truncates rather than rounds,
-      # we get results which may be different by a magnitude of 1 (since {png}
-      # library rounds properly)
       dig1 <- readBin(new_pnm , what = 'raw', size = 1, n = 1e6)
       dig2 <- readBin(ref_pnm , what = 'raw', size = 1, n = 1e6)
 
 
-      difference <- abs(as.integer(dig1) - as.integer(dig2))
-      expect_true(max(difference) <= 1)
+      expect_identical(
+        digest::digest(readBin(new_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1'),
+        digest::digest(readBin(ref_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1')
+      )
     }
   }
 
@@ -81,16 +79,14 @@ test_that("write_pnm works for RGB", {
 
       system(glue::glue("pngtopnm {ref_png} > {ref_pnm}"))
 
-
-      # Because casting from double to unsigned char truncates rather than rounds,
-      # we get results which may be different by a magnitude of 1 (since {png}
-      # library rounds properly)
       dig1 <- readBin(new_pnm , what = 'raw', size = 1, n = 1e6)
       dig2 <- readBin(ref_pnm , what = 'raw', size = 1, n = 1e6)
 
+      expect_identical(
+        digest::digest(readBin(new_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1'),
+        digest::digest(readBin(ref_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1')
+      )
 
-      difference <- abs(as.integer(dig1) - as.integer(dig2))
-      expect_true(max(difference) <= 1)
     }
   }
 

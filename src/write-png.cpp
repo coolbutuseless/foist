@@ -140,8 +140,8 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Sanity check
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (pal.nrow() != 256 | pal.ncol() != 3) {
-      stop("\'pal\' must be a 256x3 IntegerMatrix with values in the range [0,255]");
+    if (pal.nrow() < 2 | pal.nrow() > 256 | pal.ncol() != 3) {
+      stop("\'pal\' must be a N x 3 IntegerMatrix with values in the range [0,255]");
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,7 +154,8 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Write PLTE header to output
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    uint32_t data_length = 3*256;
+    unsigned int nrow = pal.nrow();
+    uint32_t data_length = 3 * nrow;
     data_length = bswap32(data_length);
     outfile.write(reinterpret_cast<const char *>(&data_length), sizeof(data_length));
 
@@ -167,13 +168,13 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     unsigned char ucpal[3*256];
     unsigned char *pucpal = &ucpal[0];
-    for (unsigned int i=0; i < 256; i++) {
-      *pucpal++ = (unsigned char)pal[i];
-      *pucpal++ = (unsigned char)pal[i + 256];
-      *pucpal++ = (unsigned char)pal[i + 512];
+    for (unsigned int i=0; i < nrow; i++) {
+      *pucpal++ = (unsigned char)pal[i           ];
+      *pucpal++ = (unsigned char)pal[i + nrow    ];
+      *pucpal++ = (unsigned char)pal[i + nrow * 2];
     }
-    outfile.write((const char *)&ucpal[0], 3*256);
-    crc32 = crc32_16bytes(&ucpal[0], 3*256, crc32);
+    outfile.write((const char *)&ucpal[0], 3*nrow);
+    crc32 = crc32_16bytes(&ucpal[0], 3*nrow, crc32);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Write PLTE CRC32 to output
@@ -441,7 +442,7 @@ void write_png_grey_data(std::ofstream &outfile, NumericVector vec,
       unsigned int j = flipy ? nrow - 1 - row : row;
       *uc++ = 0; // First byte of every row is set to zero? No idea why.
       for (unsigned int col = 0; col < ncol; col++) {
-        *uc++ = (unsigned char)(v0[j] * 255);
+        *uc++ = (unsigned char)(v0[j] * scale_factor + 0.5);
         j += nrow;
       }
 
@@ -462,18 +463,18 @@ void write_png_grey_data(std::ofstream &outfile, NumericVector vec,
       const unsigned int offset = flipy ? nrow - 1 - row : row;
       double *v = v0 + ncol * offset;
       for (; col <= ncol - 8; col+=8) {
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
 
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
-        *uc++ = (unsigned char)(*v++ * 255);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
       }
       for (; col < ncol; col++) {
-        *uc++ = (unsigned char)(*v++ * 255);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
       }
 
       // Flush the buffer to file
@@ -574,9 +575,9 @@ void write_png_RGB_data(std::ofstream &outfile, NumericVector vec,
       unsigned int b = offset + nrow * ncol * 2;
       *uc++ = 0;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(v0[r] * scale_factor);
-        *uc++ = (unsigned char)(v0[g] * scale_factor);
-        *uc++ = (unsigned char)(v0[b] * scale_factor);
+        *uc++ = (unsigned char)(v0[r] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[g] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[b] * scale_factor + 0.5);
         r += nrow;
         g += nrow;
         b += nrow;
@@ -600,9 +601,9 @@ void write_png_RGB_data(std::ofstream &outfile, NumericVector vec,
       double *b = v0 + ncol * offset + nrow * ncol * 2;
       *uc++ = 0;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(*r++ * scale_factor);
-        *uc++ = (unsigned char)(*g++ * scale_factor);
-        *uc++ = (unsigned char)(*b++ * scale_factor);
+        *uc++ = (unsigned char)(*r++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*g++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*b++ * scale_factor + 0.5);
       }
 
       // Flush the buffer to file
@@ -641,7 +642,6 @@ void write_png_RGB_data(std::ofstream &outfile, NumericVector vec,
 //' \itemize{
 //' \item{Data is not compressed.}
 //' \item{Matrix or array must be of type \code{numeric}}
-//' \item{When converting to unsigned bytes for output, values are truncated rather than rounded}
 //' }
 //'
 //' Design decisions
@@ -717,20 +717,6 @@ void write_png_core(NumericVector vec,
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Scale the intensity
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  double scale_factor = 255.0;
-  if (intensity_factor <= 0) {
-    double *max_value = std::max_element(vec.begin(), vec.end());
-    if (*max_value == 0) {
-      *max_value = 1;
-    }
-    scale_factor /= *max_value;
-  } else {
-    scale_factor *= intensity_factor;
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Open stream
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   std::ofstream outfile;
@@ -747,10 +733,11 @@ void write_png_core(NumericVector vec,
   // Write the IHDR chunk
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned int colour_type = 0; // Grey by default
+  bool has_palette = pal.isNotNull();
   if (depth == 3) {
     colour_type = 2; // RGB
   }
-  if (pal.isNotNull()) {
+  if (has_palette) {
     if (depth != 1) {
       stop("Can't have a palette unless depth = 1");
     }
@@ -760,11 +747,31 @@ void write_png_core(NumericVector vec,
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // If a palette given, then write out a PLTE chunk
+  // Default scaling is to [0, 255]
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (pal.isNotNull()) {
+  double scale_factor = 255.0;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // If a palette given, then write out a PLTE chunk.
+  // Also set the scale factor dependent upon the number of palette colours
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (has_palette) {
     Rcpp::IntegerMatrix pal_(pal);
     write_PLTE(outfile, pal_);
+    scale_factor = pal_.nrow() - 1;
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Scale the intensity
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (intensity_factor <= 0) {
+    double *max_value = std::max_element(vec.begin(), vec.end());
+    if (*max_value == 0) {
+      *max_value = 1;
+    }
+    scale_factor /= *max_value;
+  } else {
+    scale_factor *= intensity_factor;
   }
 
 

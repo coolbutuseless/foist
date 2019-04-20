@@ -45,7 +45,6 @@ that corners are cut to make it happen quickly:
 \itemize{
 \item{Data is not compressed.}
 \item{Matrix or array must be of type \code{numeric}}
-\item{When converting to unsigned bytes for output, values are truncated rather than rounded}
 }
 
 Design decisions

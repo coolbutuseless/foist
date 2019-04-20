@@ -16,11 +16,11 @@
 
 <br/>
 
-**`foist` can write lossless grey image files \~5.5x faster than the
-`png` library.**
+**`foist` can write lossless grey image files \~5x faster than the `png`
+library.**
 
-**`foist` can write lossless RGB image files \~7.5x faster than the
-`png` library.**
+**`foist` can write lossless RGB image files \~7x faster than the `png`
+library.**
 
 **`foist` allocates a lot less memory than other methods.**
 
@@ -30,7 +30,7 @@
       - [NETPBM](http://netpbm.sourceforge.net/) PGM (grey) and PPM
         (RGB) files
       - [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics)
-        files - Grey, RGB or with a fixed 256 colour palette.
+        files - Grey, RGB or with an explicit colour palette.
   - Only supports 8-bits-per-channel grey and RGB images.
   - Part of the speed of `foist` comes from using
     [Rcpp](https://cran.r-project.org/package=Rcpp) to quickly scale,
@@ -54,7 +54,7 @@ This package would not be possible without:
 
   - [Rcpp](https://cran.r-project.org/package=Rcpp) - The easiest way to
     get fast C/C++ code into R.
-  - [viridis](https://cran.r-project.org/package=viridis) - Wnderful
+  - [viridis](https://cran.r-project.org/package=viridis) - Wonderful
     palettes originally from [matplotlib](http://matplotlib.org).
   - [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid,
     uncompressed image format.
@@ -89,8 +89,6 @@ Don’t look at my C/C++ code unless you’d like a heart attack.
         by [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
         This is noticeably much faster than the slice-by-4 crc32 that
         comes with the standard [zlib library](https://www.zlib.net/).
-  - When converting the numeric values to unsigned bytes for image
-    output, they are truncated to integer rather than rounded.
   - Because PNG data also needs CRC32 and ADLER32 checksumming it is
     generally slower than PGM/PPM output.
   - However, writing a matrix with a palette will be faster in PNG as it
@@ -200,13 +198,13 @@ write_pnm(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = 
 `write_png()` and `write_pnm()` will save a 2D numeric **matrix** as an
 RGB image if also supplied with a colour palette.
 
-  - A palette must be an integer matrix with dimensions 256 x 3 and
-    values in the range \[0, 255\].
-  - Pixel values in the matrix are first scaled into the range \[0,
-    255\] and are then mapped to one of the RGB colours in the palette.
-  - The matrix values must be in the range \[0, 1\].
-  - Use the `intensity_factor` argument to scale image values on-the-fly
-    as they are written to file.
+  - A palette must be an integer matrix with dimensions N x 3
+      - N is the number of colours in the palette
+      - 2 \<= N \<= 256
+  - Values in the palette must be in the range \[0, 255\].
+  - The matrix values must initially be in the range \[0, 1\].
+  - Pixel values in the matrix are first scaled into the range \[0, N\]
+    and are then mapped to one of the RGB colours in the palette.
 
 `foist` includes the 5 palettes from
 [viridis](https://cran.r-project.org/package=viridis) as `vir$magma`
@@ -241,6 +239,42 @@ foist::write_png(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.png")
 
 </div>
 
+## Manipulate palettes
+
+Some visual effects can be created by keeping the same data, but
+manipulating the palette of a sequence of image outputs.
+
+<div>
+
+<h4 style="float:left; width:30%; margin-left: 10px;">
+
+Reduce colours
+
+</h4>
+
+<h4 style="float:left; width:30%; margin-left: 10px;">
+
+Rotate palette
+
+</h4>
+
+<h4 style="float:left; width:30%; margin-left: 10px;">
+
+Cross-fade between
+palettes
+
+</h4>
+
+</div>
+
+<div>
+
+<img src = "man/figures/pal-anim1.gif" width = "30%" title = "palette reduce">
+<img src = "man/figures/pal-anim2.gif" width = "30%" title = "palette rotate">
+<img src = "man/figures/pal-anim3.gif" width = "30%" title = "palette crossfade">
+
+</div>
+
 ## Benchmark: Saving a matrix as a grey image
 
 The following benchmark compares the time to output of a grey image
@@ -267,13 +301,13 @@ res <- bench::mark(
 )
 ```
 
-| expression                      |    min |   mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | -----: | -----: | ------: | ------: | ---------: |
-| foist::write\_pnm()             | 3.06ms | 4.41ms |  4.16ms |     227 |     2.49KB |
-| foist::write\_pnm(column-major) |  2.1ms | 2.62ms |  2.44ms |     382 |     2.49KB |
-| foist::write\_png()             | 3.38ms | 4.29ms |  4.02ms |     233 |     2.49KB |
-| foist::write\_png(column-major) | 2.33ms |  2.9ms |  2.75ms |     344 |     2.49KB |
-| png::writePNG()                 | 12.4ms | 14.4ms | 14.27ms |      69 |   673.21KB |
+| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm()             |  3.12ms |  4.43ms |  4.27ms |     226 |     2.49KB |
+| foist::write\_pnm(column-major) |  2.12ms |  2.72ms |  2.41ms |     368 |     2.49KB |
+| foist::write\_png()             |   3.5ms |  4.31ms |  3.89ms |     232 |     2.49KB |
+| foist::write\_png(column-major) |  2.28ms |  3.05ms |  2.78ms |     328 |     2.49KB |
+| png::writePNG()                 | 12.49ms | 14.74ms | 14.51ms |      68 |   673.21KB |
 
 Benchmark results
 
@@ -309,12 +343,12 @@ res <- bench::mark(
 
 | expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
 | :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               | 18.73ms |  22.5ms | 22.58ms |      44 |     2.49KB |
-| foist::write\_pnm(column-major)   |  4.86ms |  6.45ms |  6.05ms |     155 |     2.49KB |
-| foist::write\_png()               | 19.69ms | 22.28ms | 22.23ms |      45 |     2.49KB |
-| foist::write\_png(column-major)   |  6.27ms |  7.68ms |  7.31ms |     130 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.41ms |  2.98ms |  2.77ms |     336 |     2.49KB |
-| png::writePNG()                   |  46.4ms | 50.09ms |  49.7ms |      20 |     1.88MB |
+| foist::write\_pnm()               | 18.75ms | 22.74ms | 22.17ms |      44 |     2.49KB |
+| foist::write\_pnm(column-major)   |  5.06ms |  6.61ms |  6.01ms |     151 |     2.49KB |
+| foist::write\_png()               | 20.32ms | 22.57ms |  22.4ms |      44 |     2.49KB |
+| foist::write\_png(column-major)   |  6.08ms |  7.84ms |  7.36ms |     127 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.41ms |  3.16ms |   2.8ms |     316 |     2.49KB |
+| png::writePNG()                   | 45.89ms | 50.15ms | 49.84ms |      20 |     1.88MB |
 
 Benchmark results
 

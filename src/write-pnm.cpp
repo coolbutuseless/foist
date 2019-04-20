@@ -30,12 +30,14 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
 
   unsigned int depth = 3;
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Sanity check the palette is in the correct format
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (pal.nrow() != 256 | pal.ncol() != 3) {
-    stop("\'pal\' must be a 256x3 IntegerMatrix with values in the range [0,255]");
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Sanity check
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (pal.nrow() < 2 | pal.nrow() > 256 | pal.ncol() != 3) {
+    stop("\'pal\' must be a N x 3 IntegerMatrix with values in the range [0,255]");
   }
+
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set up buffer to write only BUFFER_ROWS rows a time
@@ -58,7 +60,7 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
     for (unsigned int row = 0; row < nrow; row++) {
       unsigned int j = flipy ? nrow - 1 - row : row;
       for (unsigned int col = 0; col < ncol; col ++) {
-        unsigned char val = (unsigned char)(v0[j] * scale_factor);
+        unsigned char val = (unsigned char)(v0[j] * scale_factor + 0.5);
         *uc++ = pal(val, 0);
         *uc++ = pal(val, 1);
         *uc++ = pal(val, 2);
@@ -77,7 +79,7 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
       const unsigned int offset = flipy ? nrow - 1 - row : row;
       double *v = v0 + ncol * offset;
       for (unsigned int col = 0; col < ncol; col ++) {
-        unsigned char val = (unsigned char)(*v++ * scale_factor);
+        unsigned char val = (unsigned char)(*v++ * scale_factor + 0.5);
         *uc++ = pal(val, 0);
         *uc++ = pal(val, 1);
         *uc++ = pal(val, 2);
@@ -151,9 +153,9 @@ void write_pnm_RGB_data(std::ofstream &outfile,
       unsigned int g = offset + nrow * ncol;
       unsigned int b = offset + nrow * ncol * 2;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(v0[r] * scale_factor);
-        *uc++ = (unsigned char)(v0[g] * scale_factor);
-        *uc++ = (unsigned char)(v0[b] * scale_factor);
+        *uc++ = (unsigned char)(v0[r] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[g] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[b] * scale_factor + 0.5);
         r += nrow;
         g += nrow;
         b += nrow;
@@ -173,9 +175,9 @@ void write_pnm_RGB_data(std::ofstream &outfile,
       double *g = v0 + ncol * offset + nrow * ncol;
       double *b = v0 + ncol * offset + nrow * ncol * 2;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(*r++ * scale_factor);
-        *uc++ = (unsigned char)(*g++ * scale_factor);
-        *uc++ = (unsigned char)(*b++ * scale_factor);
+        *uc++ = (unsigned char)(*r++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*g++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*b++ * scale_factor + 0.5);
       }
 
       // Flush the buffer to file
@@ -242,7 +244,7 @@ void write_pnm_grey_data(std::ofstream &outfile,
     for (unsigned int row = 0; row < nrow; row++) {
       unsigned int j = flipy ? nrow - 1 - row : row;
       for (unsigned int col = 0; col < ncol; col++) {
-        *uc++ = (unsigned char)(v0[j] * scale_factor);
+        *uc++ = (unsigned char)(v0[j] * scale_factor + 0.5);
         j += nrow;
       }
 
@@ -259,15 +261,15 @@ void write_pnm_grey_data(std::ofstream &outfile,
       const unsigned int offset = flipy ? nrow - 1 - row : row;
       double *v = v0 + ncol * offset;
       for (; col <= ncol - 8; col+=8) {
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
 
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
-        *uc++ = (unsigned char)(*v++ * scale_factor);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
       }
       for (; col < ncol; col++) {
         *uc++ = (unsigned char)(*v++ * scale_factor);
@@ -353,18 +355,9 @@ void write_pnm_core(NumericVector vec,
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Scale the intensity
+  // Default: Scale to range [0, 255]
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   double scale_factor = 255.0;
-  if (intensity_factor <= 0) {
-    double *max_value = std::max_element(vec.begin(), vec.end());
-    if (*max_value == 0) {
-      *max_value = 1;
-    }
-    scale_factor /= *max_value;
-  } else {
-    scale_factor *= intensity_factor;
-  }
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -374,6 +367,26 @@ void write_pnm_core(NumericVector vec,
 
   if (has_palette && depth != 1) {
     stop("Can't have a palette unless depth = 1");
+  }
+
+  if (has_palette) {
+    Rcpp::IntegerMatrix pal_(pal);
+    scale_factor = pal_.nrow() - 1;
+  }
+
+
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Scale the intensity
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (intensity_factor <= 0) {
+    double *max_value = std::max_element(vec.begin(), vec.end());
+    if (*max_value == 0) {
+      *max_value = 1;
+    }
+    scale_factor /= *max_value;
+  } else {
+    scale_factor *= intensity_factor;
   }
 
 

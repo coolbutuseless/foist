@@ -34,9 +34,9 @@ knitr::opts_chunk$set(
 
 <br/>
 
-**`foist` can write lossless grey image files ~5.5x faster than the `png` library.**
+**`foist` can write lossless grey image files ~5x faster than the `png` library.**
 
-**`foist` can write lossless RGB image files ~7.5x faster than the `png` library.**
+**`foist` can write lossless RGB image files ~7x faster than the `png` library.**
 
 **`foist` allocates a lot less memory than other methods.**
 
@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
 
 * Supports writing lossless images in two formats:
     * [NETPBM](http://netpbm.sourceforge.net/)  PGM (grey) and PPM (RGB) files
-    * [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) files - Grey, RGB or with a fixed 256 colour palette.
+    * [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) files - Grey, RGB or with an explicit colour palette.
 * Only supports 8-bits-per-channel grey and RGB images.
 * Part of the speed of `foist` comes from using [Rcpp](https://cran.r-project.org/package=Rcpp) 
   to quickly scale, manipulate and re-order data for image output.
@@ -65,7 +65,7 @@ knitr::opts_chunk$set(
 This package would not be possible without:
 
 * [Rcpp](https://cran.r-project.org/package=Rcpp) - The easiest way to get fast C/C++ code into R.
-* [viridis](https://cran.r-project.org/package=viridis) - Wnderful palettes originally from [matplotlib](http://matplotlib.org).
+* [viridis](https://cran.r-project.org/package=viridis) - Wonderful palettes originally from [matplotlib](http://matplotlib.org).
 * [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid, uncompressed image format.
 * [PNG](https://www.w3.org/TR/PNG/) - A 20-year old, rock-solid image format with lossless compression (which also supports uncompressed image data).
 
@@ -92,8 +92,6 @@ Don't look at my C/C++ code unless you'd like a heart attack.
       [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
       This is noticeably much faster than the slice-by-4 crc32 that comes with 
       the standard [zlib library](https://www.zlib.net/).
-* When converting the numeric values to unsigned bytes for image output, they 
-  are truncated to integer rather than rounded.
 * Because PNG data also needs CRC32 and ADLER32 checksumming it is generally
   slower than PGM/PPM output.
 * However, writing a matrix with a palette will be faster in PNG as it has direct support 
@@ -206,12 +204,13 @@ system("convert man/figures/col-1-t.ppm -define png:exclude-chunks=date,time man
 
 `write_png()` and `write_pnm()` will save a 2D numeric **matrix** as an RGB image if also supplied with a colour palette.
 
-* A palette must be an integer matrix with dimensions 256 x 3 and values in the
-  range [0, 255].
-* Pixel values in the matrix are first scaled into the range [0, 255] and 
+* A palette must be an integer matrix with dimensions N x 3
+    * N is the number of colours in the palette
+    * 2 <= N <= 256
+* Values in the palette must be in the range [0, 255].
+* The matrix values must initially be in the range [0, 1]. 
+* Pixel values in the matrix are first scaled into the range [0, N] and 
   are then mapped to one of the RGB colours in the palette.
-* The matrix values must be in the range [0, 1]. 
-* Use the `intensity_factor` argument to scale image values on-the-fly as they are written to file.
     
 
 
@@ -255,6 +254,107 @@ system("convert man/figures/col-7.ppm -define png:exclude-chunks=date,time man/f
 
 
 
+## Manipulate palettes
+
+Some visual effects can be created by keeping the same data, but 
+manipulating the palette of a sequence of image outputs.
+
+
+```{r echo = FALSE}
+tdir <- tempdir()
+
+for (i in 2:40) {
+  filename <- sprintf("pal%03i.png", i)
+  filename <- file.path(tdir, filename)
+  rows <- as.integer(seq.int(1, 256, length.out = i))
+  pal  <- foist::vir$viridis[rows,]
+  foist::write_png(dbl_mat, filename, convert_to_row_major = TRUE, pal = pal)
+}
+
+
+
+for (i in seq(40, 2)) {
+  filename <- sprintf("pal%03i.png", 40 + (40 - i) + 1)
+  filename <- file.path(tdir, filename)
+  rows <- as.integer(seq.int(1, 256, length.out = i))
+  pal  <- foist::vir$viridis[rows,]
+  foist::write_png(dbl_mat, filename, convert_to_row_major = TRUE, pal = pal)
+}
+
+
+command <- glue::glue("convert {tdir}/pal*.png man/figures/pal-anim1.gif")
+system(command)
+```
+
+
+
+
+```{r echo = FALSE}
+tdir <- tempdir()
+
+
+for (i in seq(1, 255, 5)) {
+  filename <- sprintf("pal%03i.ppm", i)
+  filename <- file.path(tdir, filename)
+  rows <- c(seq(i, 255), seq(0, i-1))
+  pal <- foist::vir$cividis[rows,]
+  foist::write_pnm(dbl_mat, filename, convert_to_row_major = TRUE, pal = pal)
+}
+
+
+command <- glue::glue("convert  -delay 1x100 {tdir}/pal*.ppm man/figures/pal-anim2.gif")
+system(command)
+```
+
+
+
+
+```{r echo = FALSE}
+tdir <- tempdir()
+
+
+for (i in seq(0, 255, 5)) {
+  filename <- sprintf("crossfade-a-%03i.png", i)
+  filename <- file.path(tdir, filename)
+  
+  pal  <- foist::vir$viridis * i/255 + foist::vir$plasma * (255 - i)/255
+  mode(pal) <- 'integer'
+  
+  foist::write_png(dbl_mat, filename, convert_to_row_major = TRUE, pal = pal)
+}
+
+
+
+for (i in seq(0, 255, 5)) {
+  filename <- sprintf("crossfade-b-%03i.png", i)
+  filename <- file.path(tdir, filename)
+  
+  pal  <- foist::vir$plasma * i/255 + foist::vir$viridis * (255 - i)/255
+  mode(pal) <- 'integer'
+  
+  foist::write_png(dbl_mat, filename, convert_to_row_major = TRUE, pal = pal)
+}
+
+
+
+command <- glue::glue("convert {tdir}/crossfade-*.png man/figures/pal-anim3.gif")
+system(command)
+```
+
+
+
+<div>
+  <h4 style = "float:left; width:30%; margin-left: 10px;">Reduce colours</h4>
+  <h4 style = "float:left; width:30%; margin-left: 10px;">Rotate palette</h4>
+  <h4 style = "float:left; width:30%; margin-left: 10px;">Cross-fade between palettes</h4>
+</div>
+
+
+<div>
+  <img src = "man/figures/pal-anim1.gif" width = "30%" title = "palette reduce">
+  <img src = "man/figures/pal-anim2.gif" width = "30%" title = "palette rotate">
+  <img src = "man/figures/pal-anim3.gif" width = "30%" title = "palette crossfade">
+</div>
 
 
 
@@ -360,7 +460,6 @@ plot(res) +
   theme(legend.position = 'bottom') + 
   labs(title = 'Saving a 1024x640 RGB image', y = '')
 ```
-
 
 
 

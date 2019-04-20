@@ -1,5 +1,11 @@
 
 
+# foist 0.1.4
+
+* Now correctly rounding doubles when scaling and converting to unsigned char for output.
+* Support palettes from 2 to 256 colours
+
+
 # foist 0.1.3
 
 * Added PNG support
