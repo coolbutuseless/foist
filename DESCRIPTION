@@ -1,7 +1,7 @@
 Package: foist
 Type: Package
 Title: Fast Output of Images
-Version: 0.1.4
+Version: 0.1.5
 Date: 2019-04-20
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>

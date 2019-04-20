@@ -1,5 +1,12 @@
 
 
+# foist 0.1.5
+
+* Added `invert` option to `write_png()` and `write_pnm()`
+    * The default output maps 0 to black and 1 to white.
+    * Setting `invert = TRUE` switches 1 to be black and 0 to be white.
+
+
 # foist 0.1.4
 
 * Now correctly rounding doubles when scaling and converting to unsigned char for output.

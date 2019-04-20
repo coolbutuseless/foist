@@ -5,7 +5,7 @@
 \title{Write a numeric matrix or array to a NETPBM PNM file}
 \usage{
 write_pnm(data, filename, convert_to_row_major = TRUE, flipy = FALSE,
-  intensity_factor = 1, pal = NULL)
+  invert = FALSE, intensity_factor = 1, pal = NULL)
 }
 \arguments{
 \item{data}{numeric 2d matrix or 3d array (with 3 planes)}
@@ -22,6 +22,10 @@ better cache coherency) but the image will be transposed. Default: TRUE}
 Set flipy = TRUE for [0, 0] to represent the bottom-left corner.  This operation
 is very fast and has negligible impact on overall write speed.
 Default: flipy = FALSE.}
+
+\item{invert}{invert all the pixel brightness values - as if the image were
+converted into a negative. Dark areas become bright and bright areas become dark.
+Default: FALSE}
 
 \item{intensity_factor}{Multiplication factor applied to all values in image
 (note: no checking is performed to ensure values remain in range [0, 1]).

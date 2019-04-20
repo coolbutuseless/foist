@@ -21,12 +21,13 @@ using namespace Rcpp;
 // - Write PALETTE image data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
-                                      unsigned int ncol,
-                                      unsigned int nrow,
-                                      double scale_factor,
-                                      bool convert_to_row_major,
-                                      bool flipy,
-                                      IntegerMatrix pal) {
+                                      const unsigned int ncol,
+                                      const unsigned int nrow,
+                                      const double scale_factor,
+                                      const double round_offset,
+                                      const bool convert_to_row_major,
+                                      const bool flipy,
+                                      const IntegerMatrix pal) {
 
   unsigned int depth = 3;
 
@@ -46,13 +47,13 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
   unsigned int buffer_size = BUFFER_ROWS * ncol * depth;
   unsigned int remainder_size = (nrow % BUFFER_ROWS) * ncol * depth;
   unsigned char *uc0 = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
-  if (!uc0) stop("write_pnm(): out of memory");
+  if (!uc0) stop("write_pnm_grey_data_with_palette(): out of memory");
   unsigned char *uc = uc0;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get a pointer to the actual data in the supplied matrix
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  double *v0 = vec.begin();
+  double *v0 = (double *)vec.begin();
 
 
   if (convert_to_row_major) {
@@ -60,7 +61,7 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
     for (unsigned int row = 0; row < nrow; row++) {
       unsigned int j = flipy ? nrow - 1 - row : row;
       for (unsigned int col = 0; col < ncol; col ++) {
-        unsigned char val = (unsigned char)(v0[j] * scale_factor + 0.5);
+        unsigned char val = (unsigned char)(v0[j] * scale_factor + round_offset);
         *uc++ = pal(val, 0);
         *uc++ = pal(val, 1);
         *uc++ = pal(val, 2);
@@ -79,7 +80,7 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
       const unsigned int offset = flipy ? nrow - 1 - row : row;
       double *v = v0 + ncol * offset;
       for (unsigned int col = 0; col < ncol; col ++) {
-        unsigned char val = (unsigned char)(*v++ * scale_factor + 0.5);
+        unsigned char val = (unsigned char)(*v++ * scale_factor + round_offset);
         *uc++ = pal(val, 0);
         *uc++ = pal(val, 1);
         *uc++ = pal(val, 2);
@@ -118,12 +119,13 @@ void write_pnm_grey_data_with_palette(std::ofstream &outfile, NumericVector vec,
 // - Write RGB data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void write_pnm_RGB_data(std::ofstream &outfile,
-                        NumericVector vec,
-                        unsigned int ncol,
-                        unsigned int nrow,
-                        double scale_factor,
-                        bool convert_to_row_major,
-                        bool flipy) {
+                        const NumericVector vec,
+                        const unsigned int ncol,
+                        const unsigned int nrow,
+                        const double scale_factor,
+                        const double round_offset,
+                        const bool convert_to_row_major,
+                        const bool flipy) {
 
   unsigned int depth = 3;
 
@@ -134,13 +136,13 @@ void write_pnm_RGB_data(std::ofstream &outfile,
   unsigned int buffer_size = BUFFER_ROWS * ncol * depth;
   unsigned int remainder_size = (nrow % BUFFER_ROWS) * ncol * depth;
   unsigned char *uc0 = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
-  if (!uc0) stop("write_pnm(): out of memory");
+  if (!uc0) stop("write_pnm_RGB_data(): out of memory");
   unsigned char *uc = uc0;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get a pointer to the actual data in the supplied matrix
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  double *v0 = vec.begin();
+  double *v0 = (double *)vec.begin();
 
 
   if (convert_to_row_major) {
@@ -153,9 +155,9 @@ void write_pnm_RGB_data(std::ofstream &outfile,
       unsigned int g = offset + nrow * ncol;
       unsigned int b = offset + nrow * ncol * 2;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(v0[r] * scale_factor + 0.5);
-        *uc++ = (unsigned char)(v0[g] * scale_factor + 0.5);
-        *uc++ = (unsigned char)(v0[b] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[r] * scale_factor + round_offset);
+        *uc++ = (unsigned char)(v0[g] * scale_factor + round_offset);
+        *uc++ = (unsigned char)(v0[b] * scale_factor + round_offset);
         r += nrow;
         g += nrow;
         b += nrow;
@@ -175,9 +177,9 @@ void write_pnm_RGB_data(std::ofstream &outfile,
       double *g = v0 + ncol * offset + nrow * ncol;
       double *b = v0 + ncol * offset + nrow * ncol * 2;
       for (unsigned int col = 0; col < ncol; col ++) {
-        *uc++ = (unsigned char)(*r++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*g++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*b++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*r++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*g++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*b++ * scale_factor + round_offset);
       }
 
       // Flush the buffer to file
@@ -213,12 +215,13 @@ void write_pnm_RGB_data(std::ofstream &outfile,
 // - Write GREY data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void write_pnm_grey_data(std::ofstream &outfile,
-                         NumericVector vec,
-                         unsigned int ncol,
-                         unsigned int nrow,
-                         double scale_factor,
-                         bool convert_to_row_major,
-                         bool flipy) {
+                         const NumericVector vec,
+                         const unsigned int ncol,
+                         const unsigned int nrow,
+                         const double scale_factor,
+                         const double round_offset,
+                         const bool convert_to_row_major,
+                         const bool flipy) {
 
   unsigned int depth = 1;
 
@@ -229,13 +232,13 @@ void write_pnm_grey_data(std::ofstream &outfile,
   unsigned int buffer_size = BUFFER_ROWS * ncol * depth;
   unsigned int remainder_size = (nrow % BUFFER_ROWS) * ncol * depth;
   unsigned char *uc0 = (unsigned char *) calloc(buffer_size, sizeof(unsigned char));
-  if (!uc0) stop("write_pnm(): out of memory");
+  if (!uc0) stop("write_pnm_grey_data(): out of memory");
   unsigned char *uc = uc0;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Get a pointer to the actual data in the supplied vector
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  double *v0 = vec.begin();
+  double *v0 = (double *)vec.begin();
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Convert from R's column-major ordering to row-major output order
@@ -244,7 +247,7 @@ void write_pnm_grey_data(std::ofstream &outfile,
     for (unsigned int row = 0; row < nrow; row++) {
       unsigned int j = flipy ? nrow - 1 - row : row;
       for (unsigned int col = 0; col < ncol; col++) {
-        *uc++ = (unsigned char)(v0[j] * scale_factor + 0.5);
+        *uc++ = (unsigned char)(v0[j] * scale_factor + round_offset);
         j += nrow;
       }
 
@@ -261,18 +264,18 @@ void write_pnm_grey_data(std::ofstream &outfile,
       const unsigned int offset = flipy ? nrow - 1 - row : row;
       double *v = v0 + ncol * offset;
       for (; col <= ncol - 8; col+=8) {
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
 
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
-        *uc++ = (unsigned char)(*v++ * scale_factor + 0.5);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
       }
       for (; col < ncol; col++) {
-        *uc++ = (unsigned char)(*v++ * scale_factor);
+        *uc++ = (unsigned char)(*v++ * scale_factor + round_offset);
       }
 
 
@@ -310,6 +313,9 @@ void write_pnm_grey_data(std::ofstream &outfile,
 //'        Set flipy = TRUE for [0, 0] to represent the bottom-left corner.  This operation
 //'        is very fast and has negligible impact on overall write speed.
 //'        Default: flipy = FALSE.
+//' @param invert invert all the pixel brightness values - as if the image were
+//'        converted into a negative. Dark areas become bright and bright areas become dark.
+//'        Default: FALSE
 //' @param intensity_factor Multiplication factor applied to all values in image
 //'        (note: no checking is performed to ensure values remain in range [0, 1]).
 //'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
@@ -320,12 +326,13 @@ void write_pnm_grey_data(std::ofstream &outfile,
 //'
 //'
 // [[Rcpp::export]]
-void write_pnm_core(NumericVector vec,
-                    IntegerVector dims,
-                    std::string filename,
-                    bool convert_to_row_major = true,
-                    bool flipy = false,
-                    double intensity_factor = 1,
+void write_pnm_core(const NumericVector vec,
+                    const IntegerVector dims,
+                    const std::string filename,
+                    const bool convert_to_row_major = true,
+                    const bool flipy                = false,
+                    const bool invert               = false,
+                    const double intensity_factor   = 1,
                     Rcpp::Nullable<Rcpp::IntegerMatrix> pal = R_NilValue) {
 
   unsigned int nrow = dims[0];
@@ -380,7 +387,7 @@ void write_pnm_core(NumericVector vec,
   // Scale the intensity
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (intensity_factor <= 0) {
-    double *max_value = std::max_element(vec.begin(), vec.end());
+    double *max_value = (double *)std::max_element(vec.begin(), vec.end());
     if (*max_value == 0) {
       *max_value = 1;
     }
@@ -389,6 +396,17 @@ void write_pnm_core(NumericVector vec,
     scale_factor *= intensity_factor;
   }
 
+  double round_offset = 0.5;
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Invert the colours?
+  // Rounding offset is -1.5 in order to take advantage of the way a
+  // 'double' is truncated to an 'unsigned char'
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (invert) {
+    round_offset = -1.5;
+    scale_factor = -scale_factor + 1;
+  }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Open the output and write a PNM header
@@ -405,12 +423,12 @@ void write_pnm_core(NumericVector vec,
   // Write the data appropriately
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (depth == 1 && !has_palette) {
-    write_pnm_grey_data(outfile, vec, ncol, nrow, scale_factor, convert_to_row_major, flipy);
+    write_pnm_grey_data(outfile, vec, ncol, nrow, scale_factor, round_offset, convert_to_row_major, flipy);
   } else if (depth == 1 && has_palette) {
     Rcpp::IntegerMatrix pal_(pal);
-    write_pnm_grey_data_with_palette(outfile, vec, ncol, nrow, scale_factor, convert_to_row_major, flipy, pal_);
+    write_pnm_grey_data_with_palette(outfile, vec, ncol, nrow, scale_factor, round_offset, convert_to_row_major, flipy, pal_);
   } else {
-    write_pnm_RGB_data (outfile, vec, ncol, nrow, scale_factor, convert_to_row_major, flipy);
+    write_pnm_RGB_data (outfile, vec, ncol, nrow, scale_factor, round_offset, convert_to_row_major, flipy);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

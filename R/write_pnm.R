@@ -14,6 +14,9 @@
 #'        Set flipy = TRUE for [0, 0] to represent the bottom-left corner.  This operation
 #'        is very fast and has negligible impact on overall write speed.
 #'        Default: flipy = FALSE.
+#' @param invert invert all the pixel brightness values - as if the image were
+#'        converted into a negative. Dark areas become bright and bright areas become dark.
+#'        Default: FALSE
 #' @param intensity_factor Multiplication factor applied to all values in image
 #'        (note: no checking is performed to ensure values remain in range [0, 1]).
 #'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
@@ -22,6 +25,12 @@
 #'        row represents the r, g, b colour for a given grey index value. Only used
 #'        if \code{data} is a matrix
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_pnm <- function(data, filename, convert_to_row_major = TRUE, flipy = FALSE, intensity_factor = 1, pal = NULL) {
-    invisible(.Call(`_foist_write_pnm_core`, data, dim(data), filename, convert_to_row_major, flipy, intensity_factor, pal))
+write_pnm <- function(data, filename,
+                      convert_to_row_major = TRUE,
+                      flipy                = FALSE,
+                      invert               = FALSE,
+                      intensity_factor     = 1,
+                      pal                  = NULL) {
+    invisible(.Call(`_foist_write_pnm_core`, data, dim(data), filename,
+                    convert_to_row_major, flipy, invert, intensity_factor, pal))
 }

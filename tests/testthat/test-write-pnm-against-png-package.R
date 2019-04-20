@@ -82,11 +82,15 @@ test_that("write_pnm works for RGB", {
       dig1 <- readBin(new_pnm , what = 'raw', size = 1, n = 1e6)
       dig2 <- readBin(ref_pnm , what = 'raw', size = 1, n = 1e6)
 
+      diffs <- abs(as.integer(dig1) - as.integer(dig2))
+
+      expect_true(max(diffs) %in% c(0, 1))
+
       expect_identical(
         digest::digest(readBin(new_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1'),
         digest::digest(readBin(ref_pnm , what = 'raw', size = 1, n = 1e6), algo = 'sha1')
       )
-
+      flush.console()
     }
   }
 

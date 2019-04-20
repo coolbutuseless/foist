@@ -47,7 +47,10 @@ knitr::opts_chunk$set(
     * [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) files - Grey, RGB or with an explicit colour palette.
 * Only supports 8-bits-per-channel grey and RGB images.
 * Part of the speed of `foist` comes from using [Rcpp](https://cran.r-project.org/package=Rcpp) 
-  to quickly scale, manipulate and re-order data for image output.
+  to quickly scale, manipulate and re-order data for image output.  Because of this,
+  the following operations are almost free (in terms of execution time):
+    * flipping the image veritcally - `flipy = TRUE`
+    * inverting the intensity - `invert = TRUE`
 * The fastest output speed is achieved by writing the data in the same order
   in which it is stored in R (column major ordering).  The price paid 
   for this speed is that the image will appear transposed in the output.
@@ -98,6 +101,7 @@ Don't look at my C/C++ code unless you'd like a heart attack.
   for indexed colours, whereas for a NETPBM PPM file
   the intensity values need to be explicitly mapped to an RGB triplet and then
   written out in full.
+* All my benchmark timings are on a machine with an SSD.
 
 ## Installation
 
@@ -111,7 +115,7 @@ devtools::install_github("coolbutuseless/foist")
 ## Setup data
 
 * `dbl_mat` - A 2D numeric matrix for output to a grey image. All values in range [0, 1]
-* `dbl_arr` - A 3d numeric array for output to an RGB image. All values in range [0, 1]
+* `dbl_arr` - A 3D numeric array for output to an RGB image. All values in range [0, 1]
 
 ```{r}
 ncol    <- 256
@@ -138,11 +142,13 @@ dbl_arr <- array(c(r, g, b), dim = c(nrow, ncol, 3))
 ```{r example_pgm}
 # NETPBM PGM
 write_pnm(dbl_mat, "man/figures/col-0-n.pgm")
+write_pnm(dbl_mat, "man/figures/col-0-i.pgm", invert = TRUE)
 write_pnm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
 write_pnm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
 
 # PNG
 write_png(dbl_mat, "man/figures/col-0-n.png")
+write_png(dbl_mat, "man/figures/col-0-i.png", invert = TRUE)
 write_png(dbl_mat, "man/figures/col-0-f.png", flipy = TRUE)
 write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 
@@ -150,17 +156,27 @@ write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 
 ```{r echo = FALSE}
 system("convert man/figures/col-0-n.pgm -define png:exclude-chunks=date,time man/figures/col-convert-0-n.png")
+system("convert man/figures/col-0-i.pgm -define png:exclude-chunks=date,time man/figures/col-convert-0-i.png")
 system("convert man/figures/col-0-f.pgm -define png:exclude-chunks=date,time man/figures/col-convert-0-f.png")
 system("convert man/figures/col-0-t.pgm -define png:exclude-chunks=date,time man/figures/col-convert-0-t.png")
 ```
 
 <div>
-  <img src = "man/figures/col-convert-0-n.png"  width = "30%" title = "no scaling">
-  <img src = "man/figures/col-convert-0-f.png"  width = "30%" title = "flipy = TRUE"            style = "margin-left: 30px;">
-  <img src = "man/figures/col-convert-0-t.png"  width = "19%" title = "intensity_factor = 0.5"  style = "margin-left: 30px;">
+  <img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
+  <img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
+  <img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
+  <img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
 </div>
 
 
+<div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Default</div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Invert Colour</div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Flip Y</div>
+  <div style = "float:left; width:16%; margin-left: 1%;">Output as column-major</div>
+</div>
+
+<div style="clear: both;">
 
 ## Save a *3D array* as an RGB image 
 
@@ -176,26 +192,41 @@ system("convert man/figures/col-0-t.pgm -define png:exclude-chunks=date,time man
 ```{r example_ppm}
 # NETPBM PPM format
 write_pnm(dbl_arr, filename = "man/figures/col-1-n.ppm")
+write_pnm(dbl_arr, filename = "man/figures/col-1-i.ppm", invert = TRUE)
 write_pnm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
 write_pnm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
 
 # PNG
-write_pnm(dbl_arr, filename = "man/figures/col-1-n.png")
-write_pnm(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)
-write_pnm(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)
+write_png(dbl_arr, filename = "man/figures/col-1-n.png")
+write_png(dbl_arr, filename = "man/figures/col-1-i.png", invert = TRUE)
+write_png(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)
+write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)
 ```
 
 ```{r echo = FALSE}
 system("convert man/figures/col-1-n.ppm -define png:exclude-chunks=date,time man/figures/col-convert-1-n.png")
+system("convert man/figures/col-1-i.ppm -define png:exclude-chunks=date,time man/figures/col-convert-1-i.png")
 system("convert man/figures/col-1-f.ppm -define png:exclude-chunks=date,time man/figures/col-convert-1-f.png")
 system("convert man/figures/col-1-t.ppm -define png:exclude-chunks=date,time man/figures/col-convert-1-t.png")
 ```
 
 <div>
-  <img src = "man/figures/col-convert-1-n.png"  width = "30%" title = "convert_to_row_major = TRUE">
-  <img src = "man/figures/col-convert-1-f.png"  width = "30%" title = "flipy = TRUE"                  style = "margin-left: 30px;">
-  <img src = "man/figures/col-convert-1-t.png"  width = "19%" title = "convert_to_row_major = FALSE"  style = "margin-left: 30px;">
+  <img src = "man/figures/col-convert-1-n.png"  width = "25%"> 
+  <img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
+  <img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
+  <img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
 </div>
+
+
+<div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Default</div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Invert Colour</div>
+  <div style = "float:left; width:25%; margin-left: 1%;">Flip Y</div>
+  <div style = "float:left; width:16%; margin-left: 1%;">Output as column-major</div>
+</div>
+
+<div style="clear: both;">
+
 
 
 
@@ -344,9 +375,9 @@ system(command)
 
 
 <div>
-  <h4 style = "float:left; width:30%; margin-left: 10px;">Reduce colours</h4>
-  <h4 style = "float:left; width:30%; margin-left: 10px;">Rotate palette</h4>
-  <h4 style = "float:left; width:30%; margin-left: 10px;">Cross-fade between palettes</h4>
+  <div style = "float:left; width:30%; margin-left: 10px;">Reduce colours</div>
+  <div style = "float:left; width:30%; margin-left: 10px;">Rotate palette</div>
+  <div style = "float:left; width:30%; margin-left: 10px;">Cross-fade between palettes</div>
 </div>
 
 

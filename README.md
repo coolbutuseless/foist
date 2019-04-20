@@ -34,7 +34,10 @@ library.**
   - Only supports 8-bits-per-channel grey and RGB images.
   - Part of the speed of `foist` comes from using
     [Rcpp](https://cran.r-project.org/package=Rcpp) to quickly scale,
-    manipulate and re-order data for image output.
+    manipulate and re-order data for image output. Because of this, the
+    following operations are almost free (in terms of execution time):
+      - flipping the image veritcally - `flipy = TRUE`
+      - inverting the intensity - `invert = TRUE`
   - The fastest output speed is achieved by writing the data in the same
     order in which it is stored in R (column major ordering). The price
     paid for this speed is that the image will appear transposed in the
@@ -110,7 +113,7 @@ devtools::install_github("coolbutuseless/foist")
 
   - `dbl_mat` - A 2D numeric matrix for output to a grey image. All
     values in range \[0, 1\]
-  - `dbl_arr` - A 3d numeric array for output to an RGB image. All
+  - `dbl_arr` - A 3D numeric array for output to an RGB image. All
     values in range \[0, 1\]
 
 <!-- end list -->
@@ -143,22 +146,55 @@ grey image.
 ``` r
 # NETPBM PGM
 write_pnm(dbl_mat, "man/figures/col-0-n.pgm")
+write_pnm(dbl_mat, "man/figures/col-0-i.pgm", invert = TRUE)
 write_pnm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
 write_pnm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
 
 # PNG
 write_png(dbl_mat, "man/figures/col-0-n.png")
+write_png(dbl_mat, "man/figures/col-0-i.png", invert = TRUE)
 write_png(dbl_mat, "man/figures/col-0-f.png", flipy = TRUE)
 write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
 ```
 
 <div>
 
-<img src = "man/figures/col-convert-0-n.png"  width = "30%" title = "no scaling">
-<img src = "man/figures/col-convert-0-f.png"  width = "30%" title = "flipy = TRUE"            style = "margin-left: 30px;">
-<img src = "man/figures/col-convert-0-t.png"  width = "19%" title = "intensity_factor = 0.5"  style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
+<img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
 
 </div>
+
+<div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Default
+
+</div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Invert Colour
+
+</div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Flip Y
+
+</div>
+
+<div style="float:left; width:16%; margin-left: 1%;">
+
+Output as column-major
+
+</div>
+
+</div>
+
+<div style="clear: both;">
 
 ## Save a *3D array* as an RGB image
 
@@ -176,22 +212,57 @@ RGB image.
 ``` r
 # NETPBM PPM format
 write_pnm(dbl_arr, filename = "man/figures/col-1-n.ppm")
+write_pnm(dbl_arr, filename = "man/figures/col-1-i.ppm", invert = TRUE)
 write_pnm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
 write_pnm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
 
 # PNG
-write_pnm(dbl_arr, filename = "man/figures/col-1-n.png")
-write_pnm(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)
-write_pnm(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)
+write_png(dbl_arr, filename = "man/figures/col-1-n.png")
+write_png(dbl_arr, filename = "man/figures/col-1-i.png", invert = TRUE)
+write_png(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)
+write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)
 ```
 
 <div>
 
-<img src = "man/figures/col-convert-1-n.png"  width = "30%" title = "convert_to_row_major = TRUE">
-<img src = "man/figures/col-convert-1-f.png"  width = "30%" title = "flipy = TRUE"                  style = "margin-left: 30px;">
-<img src = "man/figures/col-convert-1-t.png"  width = "19%" title = "convert_to_row_major = FALSE"  style = "margin-left: 30px;">
+<img src = "man/figures/col-convert-1-n.png"  width = "25%">
+<img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
+<img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
 
 </div>
+
+<div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Default
+
+</div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Invert Colour
+
+</div>
+
+<div style="float:left; width:25%; margin-left: 1%;">
+
+Flip Y
+
+</div>
+
+<div style="float:left; width:16%; margin-left: 1%;">
+
+Output as column-major
+
+</div>
+
+</div>
+
+<div style="clear: both;">
+
+
 
 ## Save a *matrix* to an RGB image using a palette lookup
 
@@ -246,24 +317,24 @@ manipulating the palette of a sequence of image outputs.
 
 <div>
 
-<h4 style="float:left; width:30%; margin-left: 10px;">
+<div style="float:left; width:30%; margin-left: 10px;">
 
 Reduce colours
 
-</h4>
+</div>
 
-<h4 style="float:left; width:30%; margin-left: 10px;">
+<div style="float:left; width:30%; margin-left: 10px;">
 
 Rotate palette
 
-</h4>
+</div>
 
-<h4 style="float:left; width:30%; margin-left: 10px;">
+<div style="float:left; width:30%; margin-left: 10px;">
 
 Cross-fade between
 palettes
 
-</h4>
+</div>
 
 </div>
 
@@ -301,13 +372,13 @@ res <- bench::mark(
 )
 ```
 
-| expression                      |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------ | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()             |  3.12ms |  4.43ms |  4.27ms |     226 |     2.49KB |
-| foist::write\_pnm(column-major) |  2.12ms |  2.72ms |  2.41ms |     368 |     2.49KB |
-| foist::write\_png()             |   3.5ms |  4.31ms |  3.89ms |     232 |     2.49KB |
-| foist::write\_png(column-major) |  2.28ms |  3.05ms |  2.78ms |     328 |     2.49KB |
-| png::writePNG()                 | 12.49ms | 14.74ms | 14.51ms |      68 |   673.21KB |
+| expression                      |     min |   mean |  median | itr/sec | mem\_alloc |
+| :------------------------------ | ------: | -----: | ------: | ------: | ---------: |
+| foist::write\_pnm()             |  3.16ms | 4.31ms |  4.13ms |     232 |     2.49KB |
+| foist::write\_pnm(column-major) |   2.2ms | 2.77ms |  2.54ms |     361 |     2.49KB |
+| foist::write\_png()             |  3.54ms | 4.39ms |  4.03ms |     228 |     2.49KB |
+| foist::write\_png(column-major) |   2.3ms | 3.06ms |  2.84ms |     327 |     2.49KB |
+| png::writePNG()                 | 12.36ms | 14.3ms | 14.27ms |      70 |   673.21KB |
 
 Benchmark results
 
@@ -343,12 +414,12 @@ res <- bench::mark(
 
 | expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
 | :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               | 18.75ms | 22.74ms | 22.17ms |      44 |     2.49KB |
-| foist::write\_pnm(column-major)   |  5.06ms |  6.61ms |  6.01ms |     151 |     2.49KB |
-| foist::write\_png()               | 20.32ms | 22.57ms |  22.4ms |      44 |     2.49KB |
-| foist::write\_png(column-major)   |  6.08ms |  7.84ms |  7.36ms |     127 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.41ms |  3.16ms |   2.8ms |     316 |     2.49KB |
-| png::writePNG()                   | 45.89ms | 50.15ms | 49.84ms |      20 |     1.88MB |
+| foist::write\_pnm()               | 18.83ms | 21.91ms | 21.09ms |      46 |     2.49KB |
+| foist::write\_pnm(column-major)   |  5.01ms |   6.4ms |  6.03ms |     156 |     2.49KB |
+| foist::write\_png()               | 19.68ms | 21.75ms | 21.53ms |      46 |     2.49KB |
+| foist::write\_png(column-major)   |  6.34ms |  7.64ms |  7.24ms |     131 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.37ms |  2.91ms |  2.77ms |     344 |     2.49KB |
+| png::writePNG()                   | 44.39ms | 48.66ms | 48.64ms |      21 |     1.88MB |
 
 Benchmark results
 
