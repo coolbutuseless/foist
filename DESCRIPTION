@@ -1,8 +1,8 @@
 Package: foist
 Type: Package
 Title: Fast Output of Images
-Version: 0.1.5
-Date: 2019-04-20
+Version: 0.1.6
+Date: 2019-04-21
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: Fast output of numeric matrices and arrays to NETPBM PGM/PPM format

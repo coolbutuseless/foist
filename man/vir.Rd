@@ -3,12 +3,12 @@
 \docType{data}
 \name{vir}
 \alias{vir}
-\title{List of viridis colour palette matrices}
+\title{List of viridis colour palette matrices - each 256x3}
 \format{An object of class \code{list} of length 10.}
 \usage{
 vir
 }
 \description{
-List of viridis colour palette matrices
+List of viridis colour palette matrices - each 256x3
 }
 \keyword{datasets}

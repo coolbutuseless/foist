@@ -1,5 +1,10 @@
 
 
+# foist 0.1.6
+
+* Added `write_gif()`
+
+
 # foist 0.1.5
 
 * Added `invert` option to `write_png()` and `write_pnm()`

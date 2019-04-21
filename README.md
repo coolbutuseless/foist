@@ -6,13 +6,14 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.5-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.6-blue.svg) <br/>
 ![](https://img.shields.io/badge/Output-PNG-green.svg)
 ![](https://img.shields.io/badge/Output-PGM-green.svg)
 ![](https://img.shields.io/badge/Output-PPM-green.svg)
+![](https://img.shields.io/badge/Output-GIF-green.svg)
 <!-- badges: end -->
 
-#### `foist` is a very fast way to output a matrix or array to a lossless image file.
+#### `foist` is a very fast way to output a matrix or array to a lossless, uncompressed image file.
 
 <br/>
 
@@ -26,32 +27,26 @@ library.**
 
 <br/>
 
-  - Supports writing lossless images in two formats:
-      - [NETPBM](http://netpbm.sourceforge.net/) PGM (grey) and PPM
-        (RGB) files
-      - [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics)
-        files - Grey, RGB or with an explicit colour palette.
-  - Only supports 8-bits-per-channel grey and RGB images.
-  - Part of the speed of `foist` comes from using
+  - `foist` supports writing lossless images in
+    [NETPBM](http://netpbm.sourceforge.net/),
+    [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) and
+    [GIF](https://en.wikipedia.org/wiki/GIF) formats.
+  - `foist` is fast because it uses
     [Rcpp](https://cran.r-project.org/package=Rcpp) to quickly scale,
-    manipulate and re-order data for image output. Because of this, the
-    following operations are almost free (in terms of execution time):
-      - flipping the image veritcally - `flipy = TRUE`
-      - inverting the intensity - `invert = TRUE`
-  - The fastest output speed is achieved by writing the data in the same
-    order in which it is stored in R (column major ordering). The price
+    manipulate and re-order data for image output.
+  - `foist` can be *wicked fast* if data-ordering is ignored. The price
     paid for this speed is that the image will appear transposed in the
     output.
 
 ## What’s in the box
 
-  - `write_pnm()` and `write_png()` which can both:
-      - write an array to an RGB image
-      - write a matrix to a grey image
-      - write a matrix to a RGB image with a supplied palette
-  - `vir` 5 palettes from
-    [viridis](https://cran.r-project.org/package=viridis) in the
-    appropriate format
+  - `write_pnm()` - NETPBM format RGB, grey and indexed colour palette
+    images.
+  - `write_png()` - PNG format RGB, grey and indexed colour palette
+    images.
+  - `write_gif()` - GIF format grey and indexed colour palette images.
+  - `vir` The 5 palettes from
+    [viridis](https://cran.r-project.org/package=viridis).
 
 This package would not be possible without:
 
@@ -59,20 +54,18 @@ This package would not be possible without:
     get fast C/C++ code into R.
   - [viridis](https://cran.r-project.org/package=viridis) - Wonderful
     palettes originally from [matplotlib](http://matplotlib.org).
-  - [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old, rock-solid,
-    uncompressed image format.
-  - [PNG](https://www.w3.org/TR/PNG/) - A 20-year old, rock-solid image
-    format with lossless compression (which also supports uncompressed
-    image data).
-
-## Caveats
-
-Don’t look at my C/C++ code unless you’d like a heart attack.
+  - [NETPBM](http://netpbm.sourceforge.net) - A 30-year-old uncompressed
+    image format for full-colour images.
+  - [PNG](https://www.w3.org/TR/PNG/) - A 20-year old image format for
+    full-colour and indexed-colour images.
+  - [GIF](https://www.w3.org/Graphics/GIF/spec-gif87.txt) - A 30-year
+    old image format for indexed-colour images.
 
 ## Technical Notes
 
-  - `foist` contains a bespoke, minimalist PNG encoder I wrote in C++
-      - This was written so I’d have complete control over the image
+  - `foist` contains a **bespoke, minimalist PNG encoder** written in
+    C++
+      - Written so the package has complete control over the image
         output.
       - There is no lossless compression enabled in this PNG encoder
         i.e. only uncompressed DEFLATE blocks are used (see
@@ -92,11 +85,18 @@ Don’t look at my C/C++ code unless you’d like a heart attack.
         by [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
         This is noticeably much faster than the slice-by-4 crc32 that
         comes with the standard [zlib library](https://www.zlib.net/).
+  - `foist` contains a **bespoke, minimalist GIF encoder** written in
+    C++
+      - Written so the package has complete control over the image
+        output.
+      - Writes uncompressed GIFs only (No LZW compression is included).
+      - Only 128 colours/image are possible with this GIF encoder - this
+        limitiation greatly reduces the complexity of the code.
   - Because PNG data also needs CRC32 and ADLER32 checksumming it is
-    generally slower than PGM/PPM output.
-  - However, writing a matrix with a palette will be faster in PNG as it
-    has direct support for indexed colours, whereas for a NETPBM PPM
-    file the intensity values need to be explicitly mapped to an RGB
+    generally slower than GIF/PGM/PPM output.
+  - However, writing a matrix with a palette will be faster in GIF/PNG
+    as it has direct support for indexed colours, whereas for a NETPBM
+    PPM file the intensity values need to be explicitly mapped to an RGB
     triplet and then written out in full.
   - All my benchmark timings are on a machine with an SSD.
 
@@ -106,8 +106,8 @@ You can install the package from
 [GitHub](https://github.com/coolbutuseless/foist) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("coolbutuseless/foist")
+# install.packages("remotes")
+remotes::install_github("coolbutuseless/foist")
 ```
 
 ## Setup data
@@ -140,30 +140,24 @@ grey image.
 
   - The matrix values must be in the range \[0, 1\].
   - Use the `intensity_factor` argument to scale image values on-the-fly
-    as they are written to file.
+    as they are written to
+file.
 
 <!-- end list -->
 
 ``` r
-# NETPBM PGM
-write_pnm(dbl_mat, "man/figures/col-0-n.pgm")
-write_pnm(dbl_mat, "man/figures/col-0-i.pgm", invert = TRUE)
-write_pnm(dbl_mat, "man/figures/col-0-f.pgm", flipy = TRUE)
-write_pnm(dbl_mat, "man/figures/col-0-t.pgm", convert_to_row_major = FALSE)
-
-# PNG
-write_png(dbl_mat, "man/figures/col-0-n.png")
-write_png(dbl_mat, "man/figures/col-0-i.png", invert = TRUE)
-write_png(dbl_mat, "man/figures/col-0-f.png", flipy = TRUE)
-write_png(dbl_mat, "man/figures/col-0-t.png", convert_to_row_major = FALSE)
+write_pnm(dbl_mat, "man/figures/col-0-n.pgm")                               # PGM
+write_pnm(dbl_mat, "man/figures/col-0-i.pgm", invert = TRUE)                # PGM
+write_png(dbl_mat, "man/figures/col-0-f.png", flipy = TRUE)                 # PNG
+write_gif(dbl_mat, "man/figures/col-0-t.gif", convert_to_row_major = FALSE) # GIF
 ```
 
 <div>
 
 <img src = "man/figures/col-convert-0-n.png"  width = "25%" title = "Default">
 <img src = "man/figures/col-convert-0-i.png"  width = "25%" title = "invert = TRUE"                style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-0-f.png"  width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-0-t.png"  width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
+<img src = "man/figures/col-0-f.png"          width = "25%" title = "flipy = TRUE"                 style = "margin-left: 1%;" >
+<img src = "man/figures/col-0-t.gif"          width = "16%" title = "convert_to_row_major = TRUE"  style = "margin-left: 1%;" >
 
 </div>
 
@@ -178,30 +172,24 @@ RGB image.
     to the third dimension of the array.
   - The matrix values must be in the range \[0, 1\].
   - Use the `intensity_factor` argument to scale image values on-the-fly
-    as they are written to file.
+    as they are written to
+file.
 
 <!-- end list -->
 
 ``` r
-# NETPBM PPM format
-write_pnm(dbl_arr, filename = "man/figures/col-1-n.ppm")
-write_pnm(dbl_arr, filename = "man/figures/col-1-i.ppm", invert = TRUE)
-write_pnm(dbl_arr, filename = "man/figures/col-1-f.ppm", flipy = TRUE)
-write_pnm(dbl_arr, filename = "man/figures/col-1-t.ppm", convert_to_row_major = FALSE)
-
-# PNG
-write_png(dbl_arr, filename = "man/figures/col-1-n.png")
-write_png(dbl_arr, filename = "man/figures/col-1-i.png", invert = TRUE)
-write_png(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)
-write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)
+write_pnm(dbl_arr, filename = "man/figures/col-1-n.ppm")                                # NETPBM PPM
+write_pnm(dbl_arr, filename = "man/figures/col-1-i.ppm", invert = TRUE)                 # NETPBM PPM
+write_png(dbl_arr, filename = "man/figures/col-1-f.png", flipy = TRUE)                  # PNG
+write_png(dbl_arr, filename = "man/figures/col-1-t.png", convert_to_row_major = FALSE)  # PNG
 ```
 
 <div>
 
 <img src = "man/figures/col-convert-1-n.png"  width = "25%">
 <img src = "man/figures/col-convert-1-i.png"  width = "25%" title = "invert = TRUE"                 style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-1-f.png"  width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
-<img src = "man/figures/col-convert-1-t.png"  width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
+<img src = "man/figures/col-1-f.png"          width = "25%" title = "flipy = TRUE"                  style = "margin-left: 1%;" >
+<img src = "man/figures/col-1-t.png"          width = "16%" title = "convert_to_row_major = FALSE"  style = "margin-left: 1%;" >
 
 </div>
 
@@ -227,31 +215,22 @@ RGB image if also supplied with a colour palette.
 etc.
 
 ``` r
-# NETPBM format
-foist::write_pnm(dbl_mat,                           "man/figures/col-0.pgm")
-foist::write_pnm(dbl_mat, pal = foist::vir$magma  , "man/figures/col-3.ppm")
-foist::write_pnm(dbl_mat, pal = foist::vir$inferno, "man/figures/col-4.ppm")
-foist::write_pnm(dbl_mat, pal = foist::vir$plasma , "man/figures/col-5.ppm")
-foist::write_pnm(dbl_mat, pal = foist::vir$viridis, "man/figures/col-6.ppm")
-foist::write_pnm(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.ppm")
-
-# PNG format
-foist::write_png(dbl_mat,                           "man/figures/col-0.png")
-foist::write_png(dbl_mat, pal = foist::vir$magma  , "man/figures/col-3.png")
-foist::write_png(dbl_mat, pal = foist::vir$inferno, "man/figures/col-4.png")
-foist::write_png(dbl_mat, pal = foist::vir$plasma , "man/figures/col-5.png")
-foist::write_png(dbl_mat, pal = foist::vir$viridis, "man/figures/col-6.png")
-foist::write_png(dbl_mat, pal = foist::vir$cividis, "man/figures/col-7.png")
+write_pnm(dbl_mat,                    "man/figures/col-0.pgm")  # NETPBM PGM
+write_pnm(dbl_mat, pal = vir$magma  , "man/figures/col-3.ppm")  # NETPBM PPM
+write_png(dbl_mat, pal = vir$inferno, "man/figures/col-4.png")  # PNG
+write_png(dbl_mat, pal = vir$plasma , "man/figures/col-5.png")  # PNG
+write_gif(dbl_mat, pal = vir$viridis, "man/figures/col-6.gif")  # GIF
+write_gif(dbl_mat, pal = vir$cividis, "man/figures/col-7.gif")  # GIF
 ```
 
 <div>
 
 <img src = "man/figures/col-convert-0-n.png" width = "30%" title = "grey">
 <img src = "man/figures/col-convert-3.png"   width = "30%" title = "magma">
-<img src = "man/figures/col-convert-4.png"   width = "30%" title = "inferno">
-<img src = "man/figures/col-convert-5.png"   width = "30%" title = "plasma">
-<img src = "man/figures/col-convert-6.png"   width = "30%" title = "viridis">
-<img src = "man/figures/col-convert-7.png"   width = "30%" title = "cividis">
+<img src = "man/figures/col-4.png"           width = "30%" title = "inferno">
+<img src = "man/figures/col-5.png"           width = "30%" title = "plasma">
+<img src = "man/figures/col-6.gif"           width = "30%" title = "viridis">
+<img src = "man/figures/col-7.gif"           width = "30%" title = "cividis">
 
 </div>
 
@@ -283,76 +262,55 @@ using:
 
   - `foist::write_pnm()` in both row-major and column-major ordering
   - `foist::write_png()` in both row-major and column-major ordering
+  - `foist::write_gif()` in both row-major and column-major ordering
   - `png::writePNG()`
+  - `caTools::write.gif()`
 
 As can be seen in the benchmark using `flipy = TRUE` or `invert = TRUE`
-have almost no speed penalty.
+have almost no speed
+penalty.
 
-``` r
-tmp <- tempfile()
-
-res <- bench::mark(
-  `foist::write_pnm()`                          = foist::write_pnm(dbl_mat, tmp),
-  `foist::write_pnm(column-major)`              = foist::write_pnm(dbl_mat, tmp, convert_to_row_major = FALSE),
-  
-  `foist::write_png()`                          = foist::write_png(dbl_mat, tmp),
-  `foist::write_png(column-major)`              = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE),
-  `foist::write_png(column-major:flipy:invert)` = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, flipy = TRUE, invert = TRUE),
-  
-  `png::writePNG()`                       = png::writePNG   (dbl_mat, tmp),
-  min_time = 2, check = FALSE
-)
-```
-
-| expression                                   |     min |    mean | median | itr/sec | mem\_alloc |
-| :------------------------------------------- | ------: | ------: | -----: | ------: | ---------: |
-| foist::write\_pnm()                          |  3.14ms |  4.79ms | 4.47ms |     209 |     2.49KB |
-| foist::write\_pnm(column-major)              |  2.03ms |   2.9ms | 2.56ms |     345 |     2.49KB |
-| foist::write\_png()                          |  3.55ms |  4.55ms | 4.05ms |     220 |     2.49KB |
-| foist::write\_png(column-major)              |  2.31ms |  3.21ms | 2.91ms |     311 |     2.49KB |
-| foist::write\_png(column-major:flipy:invert) |  2.57ms |  3.28ms | 2.96ms |     305 |     2.49KB |
-| png::writePNG()                              | 12.38ms | 15.32ms |   15ms |      65 |   673.21KB |
+| expression                                   |     min |    mean |  median | itr/sec | mem\_alloc |
+| :------------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm()                          |  3.14ms |  4.27ms |  3.88ms |     234 |     2.49KB |
+| foist::write\_pnm(column-major)              |  2.18ms |  2.67ms |  2.48ms |     374 |     2.49KB |
+| foist::write\_gif()                          |  3.12ms |  3.85ms |  3.58ms |     260 |     2.49KB |
+| foist::write\_gif(column-major)              |  2.12ms |  2.77ms |  2.44ms |     361 |     2.49KB |
+| foist::write\_png()                          |  3.56ms |  4.26ms |     4ms |     234 |     2.49KB |
+| foist::write\_png(column-major)              |  2.48ms |  3.27ms |  2.84ms |     305 |     2.49KB |
+| foist::write\_png(column-major:flipy:invert) |  2.34ms |  3.32ms |  2.87ms |     301 |     2.49KB |
+| png::writePNG()                              | 12.04ms | 14.03ms | 13.91ms |      71 |   673.21KB |
+| caTools::write.gif()                         | 25.05ms | 29.64ms |  26.8ms |      34 |    35.18MB |
 
 Benchmark results
 
 <img src="man/figures/README-benchmark_grey-1.png" width="100%" />
 
-## Benchmark: Saving an array as an RGB image
+## Benchmark: Saving an RGB image
 
 The following benchmark compares the time to output a colour image
 using:
 
-  - `foist::write_pnm()` in both row-major and column-major ordering
-  - `foist::write_png()` in both row-major and column-major ordering
-  - `png::writePNG()`
-
-<!-- end list -->
-
-``` r
-tmp <- tempfile()
-
-res <- bench::mark(
-  `foist::write_pnm()`                    = foist::write_pnm(dbl_arr, tmp),
-  `foist::write_pnm(column-major)`        = foist::write_pnm(dbl_arr, tmp, convert_to_row_major = FALSE),
-  
-  `foist::write_png()`                    = foist::write_png(dbl_arr, tmp),
-  `foist::write_png(column-major)`        = foist::write_png(dbl_arr, tmp, convert_to_row_major = FALSE),
-  
-  `foist::write_png(indexed colour)`      = foist::write_png(dbl_mat, tmp, convert_to_row_major = FALSE, pal = foist::vir$magma),
-  
-  `png::writePNG()`                       = png::writePNG   (dbl_arr, tmp),
-  min_time = 2, check = FALSE
-)
-```
+  - `foist::write_pnm()` saving a 3D array in both row-major and
+    column-major ordering
+  - `foist::write_png()` saving a 3D array in both row-major and
+    column-major ordering
+  - `foist::write_png()` saving a 2D matrix with an indexed colour
+    palette
+  - `foist::write_gif()` saving a 2D matrix with an indexed colour
+    palette
+  - `png::writePNG()` saving a 3D
+array
 
 | expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
 | :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               | 19.17ms | 24.32ms | 23.54ms |      41 |     2.49KB |
-| foist::write\_pnm(column-major)   |  5.29ms |  7.22ms |  6.46ms |     139 |     2.49KB |
-| foist::write\_png()               |  20.3ms | 23.74ms | 22.97ms |      42 |     2.49KB |
-| foist::write\_png(column-major)   |  6.43ms |  8.02ms |  7.39ms |     125 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.43ms |  3.08ms |  2.81ms |     324 |     2.49KB |
-| png::writePNG()                   | 46.69ms | 49.21ms | 49.42ms |      20 |     1.88MB |
+| foist::write\_pnm()               | 18.63ms | 22.07ms | 21.84ms |      45 |     2.49KB |
+| foist::write\_pnm(column-major)   |  5.42ms |  8.49ms |  6.15ms |     118 |     2.49KB |
+| foist::write\_png()               | 19.36ms |  22.3ms | 21.71ms |      45 |     2.49KB |
+| foist::write\_png(column-major)   |  6.52ms |  8.16ms |   7.3ms |     122 |     2.49KB |
+| foist::write\_png(indexed colour) |  2.48ms |   3.1ms |  2.79ms |     323 |     2.49KB |
+| foist::write\_gif(indexed colour) |   2.1ms |  2.65ms |  2.45ms |     378 |     2.49KB |
+| png::writePNG()                   | 45.44ms | 49.44ms | 49.26ms |      20 |     1.88MB |
 
 Benchmark results
 

@@ -11,6 +11,7 @@ for (palname in c('A', 'B', 'C', 'D', 'E')) {
   vir[[palname]] <- as.matrix(tmp[tmp$opt == palname, 1:3])
   vir[[palname]] <- round(255 * vir[[palname]])
   storage.mode(vir[[palname]]) <- 'integer'
+  rownames(vir[[palname]]) <- NULL
 }
 
 
@@ -21,9 +22,10 @@ vir[['viridis']] <- vir[['D']]
 vir[['cividis']] <- vir[['E']]
 
 
-usethis::use_data(vir, internal = TRUE, compress = 'xz', overwrite = TRUE)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# A 128 colour GREY palette for default GIF usage
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+grey128 <- matrix(as.integer(seq(0, 255, 2)), ncol = 3, nrow = 128)
 
 
-# pal <- vir$D
-#
-# saveRDS(pal, file = "~/pal.rds")
+usethis::use_data(vir, grey128, internal = TRUE, compress = 'xz', overwrite = TRUE)
