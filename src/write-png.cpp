@@ -43,12 +43,13 @@ static inline uint32_t bswap32(uint32_t x) {
 //  - Write PNG header - 8 bytes.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void write_PNG_signature(std::ofstream &outfile) {
-  const char PNG_header[12] = {
+  const unsigned char PNG_header[12] = {
     0x89, 0x50, 0x4e, 0x47,   // ".PNG"
     0x0d, 0x0a, 0x1a, 0x0a    // CRC32
   };
 
-  outfile.write(&PNG_header[0], 8);
+  outfile.write(reinterpret_cast<const char *>(&PNG_header[0]), 8);
+  // outfile.write(&PNG_header[0], 8);
 }
 
 
