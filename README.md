@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.6-blue.svg) <br/>
+![](https://img.shields.io/badge/Version-0.1.7-blue.svg) <br/>
 ![](https://img.shields.io/badge/Output-PNG-green.svg)
 ![](https://img.shields.io/badge/Output-PGM-green.svg)
 ![](https://img.shields.io/badge/Output-PPM-green.svg)
@@ -140,8 +140,7 @@ grey image.
 
   - The matrix values must be in the range \[0, 1\].
   - Use the `intensity_factor` argument to scale image values on-the-fly
-    as they are written to
-file.
+    as they are written to file.
 
 <!-- end list -->
 
@@ -172,8 +171,7 @@ RGB image.
     to the third dimension of the array.
   - The matrix values must be in the range \[0, 1\].
   - Use the `intensity_factor` argument to scale image values on-the-fly
-    as they are written to
-file.
+    as they are written to file.
 
 <!-- end list -->
 
@@ -237,8 +235,7 @@ write_gif(dbl_mat, pal = vir$cividis, "man/figures/col-7.gif")  # GIF
 ## Manipulate palettes
 
 Some visual effects can be created by keeping the same data, but
-manipulating the palette of a sequence of image
-outputs.
+manipulating the palette of a sequence of image outputs.
 
 <div>
 
@@ -267,22 +264,23 @@ using:
   - `caTools::write.gif()`
 
 As can be seen in the benchmark using `flipy = TRUE` or `invert = TRUE`
-have almost no speed
-penalty.
+have almost no speed penalty.
 
-| expression                                   |     min |    mean |  median | itr/sec | mem\_alloc |
-| :------------------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()                          |  3.14ms |  4.27ms |  3.88ms |     234 |     2.49KB |
-| foist::write\_pnm(column-major)              |  2.18ms |  2.67ms |  2.48ms |     374 |     2.49KB |
-| foist::write\_gif()                          |  3.12ms |  3.85ms |  3.58ms |     260 |     2.49KB |
-| foist::write\_gif(column-major)              |  2.12ms |  2.77ms |  2.44ms |     361 |     2.49KB |
-| foist::write\_png()                          |  3.56ms |  4.26ms |     4ms |     234 |     2.49KB |
-| foist::write\_png(column-major)              |  2.48ms |  3.27ms |  2.84ms |     305 |     2.49KB |
-| foist::write\_png(column-major:flipy:invert) |  2.34ms |  3.32ms |  2.87ms |     301 |     2.49KB |
-| png::writePNG()                              | 12.04ms | 14.03ms | 13.91ms |      71 |   673.21KB |
-| caTools::write.gif()                         | 25.05ms | 29.64ms |  26.8ms |      34 |    35.18MB |
+| expression                                                                                     |     min |  median | itr/sec | mem\_alloc |
+| :--------------------------------------------------------------------------------------------- | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm(dbl\_mat, tmp)                                                               |  2.77ms |  3.44ms |     274 |     2.49KB |
+| foist::write\_pnm(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  1.85ms |  2.15ms |     398 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp)                                                               |  2.81ms |  3.14ms |     291 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  1.84ms |  2.16ms |     420 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp)                                                               |  3.17ms |  3.54ms |     265 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  2.17ms |  2.47ms |     373 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, flipy = TRUE, invert = TRUE) |  2.21ms |  2.52ms |     358 |     2.49KB |
+| png::writePNG(dbl\_mat, tmp)                                                                   | 12.56ms | 14.02ms |      70 |   670.84KB |
+| caTools::write.gif(dbl\_mat, tmp)                                                              |  25.3ms | 27.93ms |      33 |    35.17MB |
 
 Benchmark results
+
+    #> Loading required namespace: tidyr
 
 <img src="man/figures/README-benchmark_grey-1.png" width="100%" />
 
@@ -299,18 +297,17 @@ using:
     palette
   - `foist::write_gif()` saving a 2D matrix with an indexed colour
     palette
-  - `png::writePNG()` saving a 3D
-array
+  - `png::writePNG()` saving a 3D array
 
-| expression                        |     min |    mean |  median | itr/sec | mem\_alloc |
-| :-------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm()               | 18.63ms | 22.07ms | 21.84ms |      45 |     2.49KB |
-| foist::write\_pnm(column-major)   |  5.42ms |  8.49ms |  6.15ms |     118 |     2.49KB |
-| foist::write\_png()               | 19.36ms |  22.3ms | 21.71ms |      45 |     2.49KB |
-| foist::write\_png(column-major)   |  6.52ms |  8.16ms |   7.3ms |     122 |     2.49KB |
-| foist::write\_png(indexed colour) |  2.48ms |   3.1ms |  2.79ms |     323 |     2.49KB |
-| foist::write\_gif(indexed colour) |   2.1ms |  2.65ms |  2.45ms |     378 |     2.49KB |
-| png::writePNG()                   | 45.44ms | 49.44ms | 49.26ms |      20 |     1.88MB |
+| expression                                                                                |     min |  median | itr/sec | mem\_alloc |
+| :---------------------------------------------------------------------------------------- | ------: | ------: | ------: | ---------: |
+| foist::write\_pnm(dbl\_arr, tmp)                                                          | 17.66ms | 19.67ms |      48 |     2.49KB |
+| foist::write\_pnm(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  4.14ms |   5.2ms |     180 |     2.49KB |
+| foist::write\_png(dbl\_arr, tmp)                                                          | 18.65ms | 20.35ms |      49 |     2.49KB |
+| foist::write\_png(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  5.79ms |  6.41ms |     143 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |   2.2ms |  2.49ms |     357 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |  1.72ms |  2.17ms |     431 |     2.49KB |
+| png::writePNG(dbl\_arr, tmp)                                                              | 47.09ms | 50.22ms |      20 |     1.88MB |
 
 Benchmark results
 

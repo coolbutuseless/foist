@@ -4,8 +4,15 @@
 \alias{write_pnm}
 \title{Write a numeric matrix or array to a NETPBM PNM file}
 \usage{
-write_pnm(data, filename, convert_to_row_major = TRUE, flipy = FALSE,
-  invert = FALSE, intensity_factor = 1, pal = NULL)
+write_pnm(
+  data,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = NULL
+)
 }
 \arguments{
 \item{data}{numeric 2d matrix or 3d array (with 3 planes)}

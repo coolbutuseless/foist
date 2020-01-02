@@ -4,8 +4,16 @@
 \alias{write_png_core}
 \title{Write a numeric matrix or array to a PNG file}
 \usage{
-write_png_core(vec, dims, filename, convert_to_row_major = TRUE,
-  flipy = FALSE, invert = FALSE, intensity_factor = 1, pal = NULL)
+write_png_core(
+  vec,
+  dims,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = NULL
+)
 }
 \arguments{
 \item{vec}{numeric 2d matrix or 3d array (with 3 planes)}

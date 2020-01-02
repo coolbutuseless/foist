@@ -4,8 +4,15 @@
 \alias{write_gif}
 \title{Write a numeric matrix to an uncompressed GIF file}
 \usage{
-write_gif(data, filename, convert_to_row_major = TRUE, flipy = FALSE,
-  invert = FALSE, intensity_factor = 1, pal = grey128)
+write_gif(
+  data,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = grey128
+)
 }
 \arguments{
 \item{data}{numeric 2d}

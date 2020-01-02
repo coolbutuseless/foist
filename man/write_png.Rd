@@ -4,8 +4,15 @@
 \alias{write_png}
 \title{Write a numeric matrix or array to a PNG file}
 \usage{
-write_png(data, filename, convert_to_row_major = TRUE, flipy = FALSE,
-  invert = FALSE, intensity_factor = 1, pal = NULL)
+write_png(
+  data,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = NULL
+)
 }
 \arguments{
 \item{data}{numeric 2d matrix or 3d array (with 3 planes)}

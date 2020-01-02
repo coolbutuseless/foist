@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/Status-alpha-orange.svg)
-![](https://img.shields.io/badge/Version-0.1.6-blue.svg)
+![](https://img.shields.io/badge/Version-0.1.7-blue.svg)
 <br/>
 ![](https://img.shields.io/badge/Output-PNG-green.svg)
 ![](https://img.shields.io/badge/Output-PGM-green.svg)
@@ -405,7 +405,7 @@ res <- bench::mark(
 
 ```{r benchmark_grey, echo = FALSE}
 res %>%
-  select(expression, min, mean, median, `itr/sec`, mem_alloc) %>%
+  select(expression, min, median, `itr/sec`, mem_alloc) %>%
   mutate(`itr/sec` = round(`itr/sec`)) %>%
   knitr::kable(caption = "Benchmark results")
 
@@ -453,7 +453,7 @@ res <- bench::mark(
 
 ```{r benchmark_rgb, echo = FALSE}
 res %>%
-  select(expression, min, mean, median, `itr/sec`, mem_alloc) %>%
+  select(expression, min, median, `itr/sec`, mem_alloc) %>%
   mutate(`itr/sec` = round(`itr/sec`)) %>%
   knitr::kable(caption = "Benchmark results")
 

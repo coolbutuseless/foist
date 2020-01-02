@@ -4,8 +4,16 @@
 \alias{write_pnm_core}
 \title{Write a vector of numeric data to a PNM file}
 \usage{
-write_pnm_core(vec, dims, filename, convert_to_row_major = TRUE,
-  flipy = FALSE, invert = FALSE, intensity_factor = 1, pal = NULL)
+write_pnm_core(
+  vec,
+  dims,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = NULL
+)
 }
 \arguments{
 \item{vec}{numeric vector of data}

@@ -4,8 +4,16 @@
 \alias{write_gif_core}
 \title{Write a numeric matrix or array to a GIF file}
 \usage{
-write_gif_core(vec, dims, filename, convert_to_row_major = TRUE,
-  flipy = FALSE, invert = FALSE, intensity_factor = 1, pal = NULL)
+write_gif_core(
+  vec,
+  dims,
+  filename,
+  convert_to_row_major = TRUE,
+  flipy = FALSE,
+  invert = FALSE,
+  intensity_factor = 1,
+  pal = NULL
+)
 }
 \arguments{
 \item{vec}{numeric 2d matrix}

@@ -1,4 +1,8 @@
 
+# foist 0.1.7
+
+* Fix an error with writing the PNG header
+* Update package 'Suggests' for packages needed for testing
 
 # foist 0.1.6
 
