@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
   fig.width = 11
 )
 ```
+
 # FOIst - Fast Output of Images
 
 <!-- badges: start -->
@@ -431,7 +432,6 @@ The following benchmark compares the time to output a colour image using:
 
 
 
-
 ```{r echo = FALSE}
 tmp <- tempfile()
 
@@ -464,6 +464,41 @@ plot(res) +
 ```
 
 
+
+
+## Benchmark: Saving an RGB image vs JPEG
+
+The following benchmark compares the time to output a colour image using:
+
+
+* `foist::write_png()` saving a 3D array in both row-major and column-major ordering
+
+
+
+```{r echo = FALSE}
+tmp <- tempfile()
+
+res <- bench::mark(
+  `foist::write_png()`                    = foist::write_png(dbl_arr, tmp),
+  `foist::write_png(column-major)`        = foist::write_png(dbl_arr, tmp, convert_to_row_major = FALSE),
+  
+  `jpeg::writeJPEG()`                     = jpeg::writeJPEG(dbl_arr, tmp),
+  min_time = 2, check = FALSE
+)
+```
+
+
+```{r benchmark_rgb_jpeg, echo = FALSE}
+res %>%
+  select(expression, min, median, `itr/sec`, mem_alloc) %>%
+  mutate(`itr/sec` = round(`itr/sec`)) %>%
+  knitr::kable(caption = "Benchmark results")
+
+plot(res) + 
+  theme_bw(15) + 
+  theme(legend.position = 'bottom') + 
+  labs(title = 'Saving a 1024x640 RGB image', y = '')
+```
 
 
 

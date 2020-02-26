@@ -268,15 +268,15 @@ have almost no speed penalty.
 
 | expression                                                                                     |     min |  median | itr/sec | mem\_alloc |
 | :--------------------------------------------------------------------------------------------- | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm(dbl\_mat, tmp)                                                               |  2.77ms |  3.44ms |     274 |     2.49KB |
-| foist::write\_pnm(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  1.85ms |  2.15ms |     398 |     2.49KB |
-| foist::write\_gif(dbl\_mat, tmp)                                                               |  2.81ms |  3.14ms |     291 |     2.49KB |
-| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  1.84ms |  2.16ms |     420 |     2.49KB |
-| foist::write\_png(dbl\_mat, tmp)                                                               |  3.17ms |  3.54ms |     265 |     2.49KB |
-| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  2.17ms |  2.47ms |     373 |     2.49KB |
-| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, flipy = TRUE, invert = TRUE) |  2.21ms |  2.52ms |     358 |     2.49KB |
-| png::writePNG(dbl\_mat, tmp)                                                                   | 12.56ms | 14.02ms |      70 |   670.84KB |
-| caTools::write.gif(dbl\_mat, tmp)                                                              |  25.3ms | 27.93ms |      33 |    35.17MB |
+| foist::write\_pnm(dbl\_mat, tmp)                                                               |   2.9ms |  3.85ms |     231 |     2.49KB |
+| foist::write\_pnm(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |   1.9ms |  2.25ms |     395 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp)                                                               |  2.79ms |  3.33ms |     276 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  1.86ms |  2.25ms |     403 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp)                                                               |  3.21ms |  3.71ms |     248 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE)                              |  2.25ms |  2.53ms |     368 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, flipy = TRUE, invert = TRUE) |  2.21ms |  2.57ms |     358 |     2.49KB |
+| png::writePNG(dbl\_mat, tmp)                                                                   | 12.64ms | 14.24ms |      69 |   670.81KB |
+| caTools::write.gif(dbl\_mat, tmp)                                                              | 27.43ms | 31.96ms |      31 |    35.18MB |
 
 Benchmark results
 
@@ -301,14 +301,32 @@ using:
 
 | expression                                                                                |     min |  median | itr/sec | mem\_alloc |
 | :---------------------------------------------------------------------------------------- | ------: | ------: | ------: | ---------: |
-| foist::write\_pnm(dbl\_arr, tmp)                                                          | 17.66ms | 19.67ms |      48 |     2.49KB |
-| foist::write\_pnm(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  4.14ms |   5.2ms |     180 |     2.49KB |
-| foist::write\_png(dbl\_arr, tmp)                                                          | 18.65ms | 20.35ms |      49 |     2.49KB |
-| foist::write\_png(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  5.79ms |  6.41ms |     143 |     2.49KB |
-| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |   2.2ms |  2.49ms |     357 |     2.49KB |
-| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |  1.72ms |  2.17ms |     431 |     2.49KB |
-| png::writePNG(dbl\_arr, tmp)                                                              | 47.09ms | 50.22ms |      20 |     1.88MB |
+| foist::write\_pnm(dbl\_arr, tmp)                                                          |  17.7ms | 20.36ms |      48 |     2.49KB |
+| foist::write\_pnm(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  4.72ms |  5.35ms |     167 |     2.49KB |
+| foist::write\_png(dbl\_arr, tmp)                                                          | 18.93ms | 20.68ms |      48 |     2.49KB |
+| foist::write\_png(dbl\_arr, tmp, convert\_to\_row\_major = FALSE)                         |  5.94ms |  6.51ms |     140 |     2.49KB |
+| foist::write\_png(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |  2.08ms |   2.5ms |     370 |     2.49KB |
+| foist::write\_gif(dbl\_mat, tmp, convert\_to\_row\_major = FALSE, pal = foist::vir$magma) |   1.9ms |  2.23ms |     340 |     2.49KB |
+| png::writePNG(dbl\_arr, tmp)                                                              | 46.57ms | 50.49ms |      20 |     1.88MB |
 
 Benchmark results
 
 <img src="man/figures/README-benchmark_rgb-1.png" width="100%" />
+
+## Benchmark: Saving an RGB image vs JPEG
+
+The following benchmark compares the time to output a colour image
+using:
+
+  - `foist::write_png()` saving a 3D array in both row-major and
+    column-major ordering
+
+| expression                                                        |     min |  median | itr/sec | mem\_alloc |
+| :---------------------------------------------------------------- | ------: | ------: | ------: | ---------: |
+| foist::write\_png(dbl\_arr, tmp)                                  | 19.41ms | 21.93ms |      44 |     2.49KB |
+| foist::write\_png(dbl\_arr, tmp, convert\_to\_row\_major = FALSE) |  5.98ms |  6.93ms |      76 |     2.49KB |
+| jpeg::writeJPEG(dbl\_arr, tmp)                                    | 26.99ms | 31.08ms |      32 |      1.9MB |
+
+Benchmark results
+
+<img src="man/figures/README-benchmark_rgb_jpeg-1.png" width="100%" />
