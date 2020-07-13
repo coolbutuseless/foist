@@ -1,4 +1,10 @@
 
+
+# foist 0.1.8
+
+* Remove SSE version of adler32.  Wasn't fast enough to keep, and caused
+  compilation issues on various platforms.
+
 # foist 0.1.7
 
 * Fix an error with writing the PNG header

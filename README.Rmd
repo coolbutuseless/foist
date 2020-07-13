@@ -82,7 +82,7 @@ This package would not be possible without:
       as this made the PNG implementation much simpler.
     * The encoder uses Mark Adler's `adler32.c` code from [zlib](https://www.zlib.net/) 
       Copyright (C) 1995-2011, 2016 Mark Adler.
-    * A SIMD version of `adler32()` is included but not enabled by default. 
+    * A SIMD version of `adler32()` was included but has since been removed. 
       The speed gains weren't significant enough for the machine imcompatibility
       headaches it would introduce. 
       See `#define ADLER32_SSE` in `write-png.cpp` if you'd like to try it.

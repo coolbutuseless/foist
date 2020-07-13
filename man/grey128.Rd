@@ -4,7 +4,9 @@
 \name{grey128}
 \alias{grey128}
 \title{128 grey palette - 128x3 integer matrix}
-\format{An object of class \code{matrix} with 128 rows and 3 columns.}
+\format{
+An object of class \code{matrix} (inherits from \code{array}) with 128 rows and 3 columns.
+}
 \usage{
 grey128
 }

@@ -76,11 +76,9 @@ This package would not be possible without:
       - The encoder uses Mark Adler’s `adler32.c` code from
         [zlib](https://www.zlib.net/) Copyright (C) 1995-2011, 2016 Mark
         Adler.
-      - A SIMD version of `adler32()` is included but not enabled by
+      - A SIMD version of `adler32()` was included but not enabled by
         default. The speed gains weren’t significant enough for the
-        machine imcompatibility headaches it would introduce. See
-        `#define ADLER32_SSE` in `write-png.cpp` if you’d like to try
-        it.
+        machine imcompatibility headaches it would introduce. 
       - `crc32` implementation is a very fast slice-by-16 implementation
         by [Stephan Brumme](https://create.stephan-brumme.com/crc32/).
         This is noticeably much faster than the slice-by-4 crc32 that

@@ -1,16 +1,16 @@
 Package: foist
 Type: Package
 Title: Fast Output of Images
-Version: 0.1.7
-Date: 2020-01-02
+Version: 0.1.8
+Date: 2020-07-13
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
-Description: Fast output of numeric matrices and arrays to NETPBM PGM/PPM format
+Description: Fast output of numeric matrices and arrays to NETPBM PGM/PPM, GIF
     and PNG format.
 License: MIT + file LICENSE
 Imports: Rcpp (>= 1.0.0)
 LinkingTo: Rcpp
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Depends:
     R (>= 2.10)
 Suggests: 

@@ -4,7 +4,6 @@
 using namespace Rcpp;
 
 #include "crc32.h"
-#include "adler32_simd.h"
 #include "adler32.h"
 
 
@@ -319,11 +318,7 @@ void write_IDAT(std::ofstream &outfile, unsigned char *uc0, unsigned int nbytes,
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Update the ADLER32
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#ifdef ADLER32_SSE
-  adler32 = adler32_simd_(adler32, &uc0[0], nbytes);
-#else
   adler32 = update_adler32(adler32, &uc0[0], nbytes);
-#endif
 
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -845,20 +840,3 @@ void write_png_core(const NumericVector vec,
 //   crc32 = 0; std::cout << "fast 16 " <<   crc32_16bytes(uc, N, crc32) << std::endl;
 // }
 
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Comparing ADLER32 implementation
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// void test_adler32(size_t N = 1e6) {
-//   unsigned char *uc;
-//   uc = (unsigned char *)calloc(N, sizeof(unsigned char));
-//   uint32_t adler32 = 1;
-//
-//   for (unsigned int i = 0; i < N; i++) {
-//     uc[i] = (unsigned char)(i + 1);
-//   }
-//
-//   // adler32_simd_
-//   adler32 = 1; std::cout << "adler32 naive   " <<  update_adler32(adler32, uc, N) << std::endl;
-//   adler32 = 1; std::cout << "adler32_simd_   " <<   adler32_simd_(adler32, uc, N) << std::endl;
-// }
