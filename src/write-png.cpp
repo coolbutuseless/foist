@@ -25,7 +25,10 @@ static inline uint32_t bswap32(uint32_t x) {
          (x << 24);
 #endif
 }
-
+// And same for 16bit unsigned int
+static inline uint16_t bswap16(uint16_t x) {
+    return (x << 8) | ((x >> 8) & 0xFF);
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -268,9 +271,9 @@ void write_tRNS_rgb(std::ofstream &outfile, const IntegerVector alpha_rgb) {
 
     uint16_t i16rgb[3];
     uint16_t *pi16rgb = &i16rgb[0];
-    *pi16rgb++ = (uint16_t)alpha_rgb[0];
-    *pi16rgb++ = (uint16_t)alpha_rgb[1];
-    *pi16rgb++ = (uint16_t)alpha_rgb[2];
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[0]);
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[1]);
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[2]);
     outfile.write((const char *)&i16rgb[0], 6);
     crc32 = crc32_16bytes(&i16rgb[0], 6, crc32);
 
