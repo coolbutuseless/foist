@@ -25,7 +25,10 @@ static inline uint32_t bswap32(uint32_t x) {
          (x << 24);
 #endif
 }
-
+// And same for 16bit unsigned int
+static inline uint16_t bswap16(uint16_t x) {
+    return (x << 8) | ((x >> 8) & 0xFF);
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -140,7 +143,7 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Sanity check
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (pal.nrow() < 2 | pal.nrow() > 256 | pal.ncol() != 3) {
+    if (pal.nrow() < 2 || pal.nrow() > 256 || pal.ncol() != 3) {
       stop("\'pal\' must be a N x 3 IntegerMatrix with values in the range [0,255]");
     }
 
@@ -183,7 +186,103 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     outfile.write(reinterpret_cast<const char *>(&crc32), sizeof(crc32));
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - Write out a tRNS (transparency) chunk for indexed RGB file
+// - Reference: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void write_tRNS_n(std::ofstream &outfile, unsigned int n, Rcpp::IntegerMatrix pal) {
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Sanity check
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (n < 1 || int(n) > pal.nrow()) {
+      stop("number of transparent colours must be at least 1 and no more than the number of palette entries");
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // tRNS header
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    unsigned char tRNS[4] = {
+      116, 82, 78, 83  // "tRNS"
+    };
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write tRNS header to output
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    uint32_t data_length = n;
+    data_length = bswap32(data_length);
+    outfile.write(reinterpret_cast<const char *>(&data_length), sizeof(data_length));
+
+    uint32_t crc32 = 0;
+    outfile.write((const char *)&tRNS[0], 4);
+    crc32 = crc32_16bytes(&tRNS[0], 4, crc32);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // One byte alpha value (zero) for each transparent colour
+    // Typically this will only be n=1
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    unsigned char z[1] = { 0 };
+    for (int i = 0; i < int(n); ++i) {
+      outfile.write((const char *)&z[0], 1);
+      crc32 = crc32_16bytes(&z[0], n, crc32);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write tRNS CRC32 to output
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    crc32 = bswap32(crc32);
+    outfile.write(reinterpret_cast<const char *>(&crc32), sizeof(crc32));
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - Write out a tRNS (transparency) chunk for RGB file
+// - Reference: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void write_tRNS_rgb(std::ofstream &outfile, const IntegerVector alpha_rgb) {
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Sanity check
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (alpha_rgb.length() != 3) {
+      stop("alpha rgb must be of length 3");
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // tRNS header
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    unsigned char tRNS[4] = {
+      116, 82, 78, 83  // "tRNS"
+    };
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write tRNS header to output
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    uint32_t data_length = 6;
+    data_length = bswap32(data_length);
+    outfile.write(reinterpret_cast<const char *>(&data_length), sizeof(data_length));
+
+    uint32_t crc32 = 0;
+    outfile.write((const char *)&tRNS[0], 4);
+    crc32 = crc32_16bytes(&tRNS[0], 4, crc32);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write the RGB of the transparent colour as three 2-byte values
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    uint16_t i16rgb[3];
+    uint16_t *pi16rgb = &i16rgb[0];
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[0]);
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[1]);
+    *pi16rgb++ = bswap16((uint16_t)alpha_rgb[2]);
+    outfile.write((const char *)&i16rgb[0], 6);
+    crc32 = crc32_16bytes(&i16rgb[0], 6, crc32);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Write tRNS CRC32 to output
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    crc32 = bswap32(crc32);
+    outfile.write(reinterpret_cast<const char *>(&crc32), sizeof(crc32));
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -665,10 +764,10 @@ void write_png_RGB_data(std::ofstream &outfile,
 //'    memory, but not for this use case.}
 //' }
 //'
-//' @param vec numeric 2d matrix or 3d array (with 3 planes)
-//' @param dims integer vector of length 2 i.e. \code{c(nrow, ncol)} for a matrix/grey image and of
+//' @param vec Numeric 2d matrix or 3d array (with 3 planes)
+//' @param dims Integer vector of length 2 i.e. \code{c(nrow, ncol)} for a matrix/grey image and of
 //'        length 3 i.e \code{c(nrow, ncol, 3)} for array/RGB output.
-//' @param filename output filename e.g. "example.ppm"
+//' @param filename Output filename e.g. "example.ppm"
 //' @param convert_to_row_major Convert to row-major order before output. R stores matrix
 //'        and array data in column-major order. In order to output row-major order (as
 //'        expected by PGM/PPM image format) data ordering must be converted. If this argument
@@ -678,16 +777,19 @@ void write_png_RGB_data(std::ofstream &outfile,
 //'        Set flipy = TRUE for [0, 0] to represent the bottom-left corner.  This operation
 //'        is very fast and has negligible impact on overall write speed.
 //'        Default: flipy = FALSE.
-//' @param invert invert all the pixel brightness values - as if the image were
+//' @param invert Invert all the pixel brightness values - as if the image were
 //'        converted into a negative. Dark areas become bright and bright areas become dark.
 //'        Default: FALSE
 //' @param intensity_factor Multiplication factor applied to all values in image
 //'        (note: no checking is performed to ensure values remain in range [0, 1]).
 //'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
 //'        to set the maximum value to 1.0. Default: intensity_factor = 1.0
-//' @param pal integer matrix of size 256x3 with values in the range [0, 255]. Each
+//' @param pal Integer matrix of size 256x3 with values in the range [0, 255]. Each
 //'        row represents the r, g, b colour for a given grey index value. Only used
 //'        if \code{data} is a matrix
+//' @param with_alpha Include transparency in the png? Default: FALSE. If \code{TRUE}, also provide either \code{alpha_rgb} or \code{n_alpha} depending on the dimension of \code{data}
+//' @param alpha_rgb Integer vector of length 3 giving the RGB colour to make fully transparent. Only used if \code{data} is a 3d array
+//' @param n_alpha If \code{data} is a matrix and \code{pal} has been provided, \code{n_alpha} should be a positive integer and the first \code{n_alpha} colours in the palette will be fully transparent
 //'
 //'
 //'
@@ -699,7 +801,10 @@ void write_png_core(const NumericVector vec,
                     const bool flipy                = false,
                     const bool invert               = false,
                     const double intensity_factor   = 1,
-                    Rcpp::Nullable<Rcpp::IntegerMatrix> pal = R_NilValue) {
+                    Rcpp::Nullable<Rcpp::IntegerMatrix> pal = R_NilValue,
+                    const bool with_alpha           = false,
+                    Rcpp::Nullable<IntegerVector> alpha_rgb = R_NilValue,
+                    const unsigned int n_alpha      = 0) {
 
 
   unsigned int nrow = dims[0];
@@ -769,6 +874,16 @@ void write_png_core(const NumericVector vec,
     Rcpp::IntegerMatrix pal_(pal);
     write_PLTE(outfile, pal_);
     scale_factor = pal_.nrow() - 1;
+    if (with_alpha) {
+      // for Indexed Palette RGB, the first n colours can be transparent
+      write_tRNS_n(outfile, n_alpha, pal_);
+    }
+  }
+
+  if (colour_type == 2 && with_alpha) {
+    // for colour_type 2 (RGB), we can nominate a single RGB colour to be transparent
+    IntegerVector trgb_(alpha_rgb);
+    write_tRNS_rgb(outfile, trgb_);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

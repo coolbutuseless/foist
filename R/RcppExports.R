@@ -73,10 +73,10 @@ write_gif_core <- function(vec, dims, filename, convert_to_row_major = TRUE, fli
 #'    memory, but not for this use case.}
 #' }
 #'
-#' @param vec numeric 2d matrix or 3d array (with 3 planes)
-#' @param dims integer vector of length 2 i.e. \code{c(nrow, ncol)} for a matrix/grey image and of
+#' @param vec Numeric 2d matrix or 3d array (with 3 planes)
+#' @param dims Integer vector of length 2 i.e. \code{c(nrow, ncol)} for a matrix/grey image and of
 #'        length 3 i.e \code{c(nrow, ncol, 3)} for array/RGB output.
-#' @param filename output filename e.g. "example.ppm"
+#' @param filename Output filename e.g. "example.ppm"
 #' @param convert_to_row_major Convert to row-major order before output. R stores matrix
 #'        and array data in column-major order. In order to output row-major order (as
 #'        expected by PGM/PPM image format) data ordering must be converted. If this argument
@@ -86,21 +86,24 @@ write_gif_core <- function(vec, dims, filename, convert_to_row_major = TRUE, fli
 #'        Set flipy = TRUE for [0, 0] to represent the bottom-left corner.  This operation
 #'        is very fast and has negligible impact on overall write speed.
 #'        Default: flipy = FALSE.
-#' @param invert invert all the pixel brightness values - as if the image were
+#' @param invert Invert all the pixel brightness values - as if the image were
 #'        converted into a negative. Dark areas become bright and bright areas become dark.
 #'        Default: FALSE
 #' @param intensity_factor Multiplication factor applied to all values in image
 #'        (note: no checking is performed to ensure values remain in range [0, 1]).
 #'        If intensity_factor <= 0, then automatically determine (and apply) a multiplication factor
 #'        to set the maximum value to 1.0. Default: intensity_factor = 1.0
-#' @param pal integer matrix of size 256x3 with values in the range [0, 255]. Each
+#' @param pal Integer matrix of size 256x3 with values in the range [0, 255]. Each
 #'        row represents the r, g, b colour for a given grey index value. Only used
 #'        if \code{data} is a matrix
+#' @param with_alpha Include transparency in the png? Default: FALSE. If \code{TRUE}, also provide either \code{alpha_rgb} or \code{n_alpha} depending on the dimension of \code{data}
+#' @param alpha_rgb Integer vector of length 3 giving the RGB colour to make fully transparent. Only used if \code{data} is a 3d array
+#' @param n_alpha If \code{data} is a matrix and \code{pal} has been provided, \code{n_alpha} should be a positive integer and the first \code{n_alpha} colours in the palette will be fully transparent
 #'
 #'
 #'
-write_png_core <- function(vec, dims, filename, convert_to_row_major = TRUE, flipy = FALSE, invert = FALSE, intensity_factor = 1, pal = NULL) {
-    invisible(.Call(`_foist_write_png_core`, vec, dims, filename, convert_to_row_major, flipy, invert, intensity_factor, pal))
+write_png_core <- function(vec, dims, filename, convert_to_row_major = TRUE, flipy = FALSE, invert = FALSE, intensity_factor = 1, pal = NULL, with_alpha = FALSE, alpha_rgb = NULL, n_alpha = 0L) {
+    invisible(.Call(`_foist_write_png_core`, vec, dims, filename, convert_to_row_major, flipy, invert, intensity_factor, pal, with_alpha, alpha_rgb, n_alpha))
 }
 
 #' Write a vector of numeric data to a PNM file
