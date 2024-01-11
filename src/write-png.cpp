@@ -140,7 +140,7 @@ void write_PLTE(std::ofstream &outfile, Rcpp::IntegerMatrix pal) {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Sanity check
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (pal.nrow() < 2 | pal.nrow() > 256 | pal.ncol() != 3) {
+    if (pal.nrow() < 2 || pal.nrow() > 256 || pal.ncol() != 3) {
       stop("\'pal\' must be a N x 3 IntegerMatrix with values in the range [0,255]");
     }
 
