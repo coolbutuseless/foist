@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // write_gif_core
 void write_gif_core(const NumericVector vec, const IntegerVector dims, const std::string filename, const bool convert_to_row_major, const bool flipy, const bool invert, const double intensity_factor, Rcpp::IntegerMatrix pal);
 RcppExport SEXP _foist_write_gif_core(SEXP vecSEXP, SEXP dimsSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP invertSEXP, SEXP intensity_factorSEXP, SEXP palSEXP) {
@@ -23,8 +28,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // write_png_core
-void write_png_core(const NumericVector vec, const IntegerVector dims, const std::string filename, const bool convert_to_row_major, const bool flipy, const bool invert, const double intensity_factor, Rcpp::Nullable<Rcpp::IntegerMatrix> pal);
-RcppExport SEXP _foist_write_png_core(SEXP vecSEXP, SEXP dimsSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP invertSEXP, SEXP intensity_factorSEXP, SEXP palSEXP) {
+void write_png_core(const NumericVector vec, const IntegerVector dims, const std::string filename, const bool convert_to_row_major, const bool flipy, const bool invert, const double intensity_factor, Rcpp::Nullable<Rcpp::IntegerMatrix> pal, const bool with_alpha, Rcpp::Nullable<IntegerVector> alpha_rgb, const unsigned int n_alpha);
+RcppExport SEXP _foist_write_png_core(SEXP vecSEXP, SEXP dimsSEXP, SEXP filenameSEXP, SEXP convert_to_row_majorSEXP, SEXP flipySEXP, SEXP invertSEXP, SEXP intensity_factorSEXP, SEXP palSEXP, SEXP with_alphaSEXP, SEXP alpha_rgbSEXP, SEXP n_alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericVector >::type vec(vecSEXP);
@@ -35,7 +40,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type invert(invertSEXP);
     Rcpp::traits::input_parameter< const double >::type intensity_factor(intensity_factorSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::IntegerMatrix> >::type pal(palSEXP);
-    write_png_core(vec, dims, filename, convert_to_row_major, flipy, invert, intensity_factor, pal);
+    Rcpp::traits::input_parameter< const bool >::type with_alpha(with_alphaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<IntegerVector> >::type alpha_rgb(alpha_rgbSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type n_alpha(n_alphaSEXP);
+    write_png_core(vec, dims, filename, convert_to_row_major, flipy, invert, intensity_factor, pal, with_alpha, alpha_rgb, n_alpha);
     return R_NilValue;
 END_RCPP
 }
@@ -59,7 +67,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_foist_write_gif_core", (DL_FUNC) &_foist_write_gif_core, 8},
-    {"_foist_write_png_core", (DL_FUNC) &_foist_write_png_core, 8},
+    {"_foist_write_png_core", (DL_FUNC) &_foist_write_png_core, 11},
     {"_foist_write_pnm_core", (DL_FUNC) &_foist_write_pnm_core, 8},
     {NULL, NULL, 0}
 };
