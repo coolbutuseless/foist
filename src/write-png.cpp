@@ -216,11 +216,13 @@ void write_tRNS_n(std::ofstream &outfile, unsigned int n, Rcpp::IntegerMatrix pa
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // One byte alpha value (zero) for each transparent colour
+    // Typically this will only be n=1
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    unsigned char z[1] = { 0 };
     for (int i = 0; i < int(n); ++i) {
-      outfile.write(0, 1);
+      outfile.write((const char *)&z[0], 1);
+      crc32 = crc32_16bytes(&z[0], n, crc32);
     }
-    crc32 = crc32_16bytes(0, n, crc32);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Write tRNS CRC32 to output
